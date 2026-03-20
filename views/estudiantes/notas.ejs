@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+
+<%- include('../partials/sidebar', { paginaActual: 'estudiantes' }) %>
+
+<div id="main-content">
+
+  <%# ── Topbar ── %>
+  <div id="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <a href="/estudiantes"
+         class="btn btn-sm"
+         style="background:var(--bg);border:1px solid #E2E8F0;color:var(--navy)">
+        <i class="bi bi-arrow-left me-1"></i>Lista de estudiantes
+      </a>
+      <h1 class="page-title">
+        <i class="bi bi-journal-check me-2" style="color:var(--accent)"></i><%= titulo %>
+      </h1>
+    </div>
+    <% if (usuario.rol === 'admin') { %>
+    <a href="/reportes/boletin/<%= estudiante.id %>"
+       class="btn btn-sm btn-accent">
+      <i class="bi bi-file-earmark-pdf me-1"></i>Generar boletín PDF
+    </a>
+    <% } %>
+  </div>
+
+  <div class="p-4">
+
+    <%# ── Ficha del estudiante ── %>
+    <div class="card mb-4" style="border-left:4px solid var(--accent)">
+      <div class="card-body py-3 px-4">
+        <div class="row align-items-center g-3">
+
+          <div class="col-auto">
+            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                 style="width:52px;height:52px;background:var(--navy)">
+              <i class="bi bi-person-fill text-white" style="font-size:1.4rem"></i>
+            </div>
+          </div>
+
+          <div class="col">
+            <h2 style="font-family:'Playfair Display',serif;color:var(--navy);
+                       font-size:1.3rem;margin:0">
+              <%= estudiante.nombre1 %>
+              <%= estudiante.nombre2 ? estudiante.nombre2 + ' ' : '' %><%= estudiante.apellido1 %>
+              <%= estudiante.apellido2 || '' %>
+            </h2>
+            <div class="d-flex flex-wrap gap-3 mt-1">
+              <span style="font-size:0.82rem;color:#64748B">
+                <i class="bi bi-hash"></i> <%= estudiante.codigo_estudiante %>
+              </span>
+              <span style="font-size:0.82rem;color:#64748B">
+                <i class="bi bi-mortarboard"></i> <%= estudiante.grado ? estudiante.grado.nombre : '—' %>
+              </span>
+              <span style="font-size:0.82rem;color:#64748B">
+                <i class="bi bi-journal-text"></i> <%= totalNotas %> notas registradas
+              </span>
+            </div>
+          </div>
+
+          <%# Promedio general %>
+          <div class="col-auto text-center">
+            <% if (promedioGeneral) {
+              let bgProm = '#FEE2E2', colProm = '#C0392B', codProm = 'AI';
+              const pNum = parseFloat(promedioGeneral);
+              if (pNum >= 90)      { bgProm='#DCFCE7'; colProm='#1E7E4A'; codProm='AA'; }
+              else if (pNum >= 76) { bgProm='#DBEAFE'; colProm='#1A4A8A'; codProm='AS'; }
+              else if (pNum >= 60) { bgProm='#FFF8E6'; colProm='#D4870A'; codProm='AF'; }
+            %>
+            <div class="rounded-circle d-flex flex-column align-items-center justify-content-center"
+                 style="width:64px;height:64px;background:<%= bgProm %>;border:2px solid <%= colProm %>">
+              <span style="font-size:1rem;font-weight:700;color:<%= colProm %>;line-height:1">
+                <%= codProm %>
+              </span>
+              <span style="font-size:0.65rem;color:<%= colProm %>">
+                <%= promedioGeneral %>
+              </span>
+            </div>
+            <div style="font-size:0.7rem;color:#64748B;margin-top:4px">Promedio</div>
+            <% } else { %>
+            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                 style="width:64px;height:64px;background:#F1EFE8;border:2px solid #D3D1C7">
+              <span style="font-size:0.75rem;color:#888780">Sin notas</span>
+            </div>
+            <% } %>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <%# ── Referencia de escala ── %>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <span style="font-size:0.78rem;color:#64748B;align-self:center">Escala:</span>
+      <% [
+        ['AA','90–100','#DCFCE7','#1E7E4A','Aprendizaje Avanzado'],
+        ['AS','76–89', '#DBEAFE','#1A4A8A','Aprendizaje Satisfactorio'],
+        ['AF','60–75', '#FFF8E6','#D4870A','Aprendizaje Fundamental'],
+        ['AI','< 60',  '#FEE2E2','#C0392B','Aprendizaje Inicial'],
+      ].forEach(([cod, rango, bg, col, nombre]) => { %>
+        <span class="d-flex align-items-center gap-1 px-2 py-1 rounded"
+              style="background:<%= bg %>;font-size:0.75rem">
+          <strong style="color:<%= col %>"><%= cod %></strong>
+          <span style="color:<%= col %>"><%= rango %> — <%= nombre %></span>
+        </span>
+      <% }); %>
+    </div>
+
+    <%# ── Notas por corte ── %>
+    <% if (totalNotas === 0) { %>
+
+      <%# Sin notas %>
+      <div class="card p-5 text-center">
+        <i class="bi bi-journal-x" style="font-size:2.5rem;color:#D3D1C7"></i>
+        <p class="mt-3 mb-0" style="color:#64748B">
+          Este estudiante no tiene notas registradas todavía.
+        </p>
+      </div>
+
+    <% } else { %>
+
+      <div class="row g-4">
+        <% periodos.forEach(periodo => {
+          const notasCorte = notasPorCorte[periodo.corte] || [];
+          const promCorte  = promediosPorCorte[periodo.corte];
+          const estaActivo = periodo.activo;
+        %>
+
+        <div class="col-12 col-md-6">
+          <div class="card h-100" style="<%= estaActivo ? 'border:2px solid var(--accent)' : '' %>">
+
+            <%# Header del corte %>
+            <div class="card-header-custom d-flex justify-content-between align-items-center"
+                 style="background:<%= estaActivo ? 'var(--accent)' : 'var(--navy)' %>">
+              <span style="font-family:'Playfair Display',serif;font-size:1rem">
+                Corte <%= periodo.corte %> — <%= periodo.anio %>
+                <% if (estaActivo) { %>
+                  <span class="badge ms-2"
+                        style="background:rgba(255,255,255,0.25);font-size:0.7rem">
+                    Actual
+                  </span>
+                <% } %>
+              </span>
+
+              <%# Promedio del corte %>
+              <% if (promCorte) {
+                let bgC='#FEE2E2', colC='#C0392B', codC='AI';
+                const pC = parseFloat(promCorte);
+                if (pC >= 90)      { bgC='rgba(255,255,255,0.9)'; colC='#1E7E4A'; codC='AA'; }
+                else if (pC >= 76) { bgC='rgba(255,255,255,0.9)'; colC='#1A4A8A'; codC='AS'; }
+                else if (pC >= 60) { bgC='rgba(255,255,255,0.9)'; colC='#D4870A'; codC='AF'; }
+                else               { bgC='rgba(255,255,255,0.9)'; colC='#C0392B'; codC='AI'; }
+              %>
+              <div class="d-flex align-items-center gap-1">
+                <span style="color:rgba(255,255,255,0.7);font-size:0.75rem">Prom.</span>
+                <span class="px-2 py-1 rounded"
+                      style="background:<%= bgC %>;font-size:0.8rem;font-weight:700;color:<%= colC %>">
+                  <%= promCorte %> — <%= codC %>
+                </span>
+              </div>
+              <% } %>
+            </div>
+
+            <%# Tabla de notas del corte %>
+            <div class="card-body p-0">
+              <% if (notasCorte.length === 0) { %>
+                <div class="p-4 text-center" style="color:#94A3B8;font-size:0.875rem">
+                  <i class="bi bi-dash-circle me-1"></i>Sin notas registradas en este corte
+                </div>
+              <% } else { %>
+                <table class="table table-sm mb-0" style="font-size:0.875rem">
+                  <thead style="background:#F8FAFC">
+                    <tr>
+                      <th style="padding:0.6rem 1rem;color:#475569;font-weight:600;
+                                 font-size:0.75rem;text-transform:uppercase;letter-spacing:0.04em">
+                        Materia
+                      </th>
+                      <th class="text-center"
+                          style="padding:0.6rem 0.75rem;color:#475569;font-weight:600;
+                                 font-size:0.75rem;text-transform:uppercase;letter-spacing:0.04em;width:80px">
+                        Nota
+                      </th>
+                      <th class="text-center"
+                          style="padding:0.6rem 0.75rem;color:#475569;font-weight:600;
+                                 font-size:0.75rem;text-transform:uppercase;letter-spacing:0.04em;width:70px">
+                        Nivel
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% notasCorte.forEach((nota, idx) => {
+                      let bgBadge, colBadge;
+                      switch(nota.coeficiente) {
+                        case 'AA': bgBadge='#DCFCE7'; colBadge='#1E7E4A'; break;
+                        case 'AS': bgBadge='#DBEAFE'; colBadge='#1A4A8A'; break;
+                        case 'AF': bgBadge='#FFF8E6'; colBadge='#D4870A'; break;
+                        default:   bgBadge='#FEE2E2'; colBadge='#C0392B';
+                      }
+                      const aprobado = parseFloat(nota.nota_numerica) >= 60;
+                    %>
+                    <tr style="border-bottom:1px solid #F1F5F9">
+                      <td style="padding:0.65rem 1rem;color:#1E293B">
+                        <%= nota.materia ? nota.materia.nombre : '—' %>
+                        <% if (nota.observacion) { %>
+                          <i class="bi bi-chat-dots ms-1"
+                             style="color:#94A3B8;font-size:0.75rem"
+                             title="<%= nota.observacion %>"></i>
+                        <% } %>
+                      </td>
+                      <td class="text-center" style="padding:0.65rem 0.75rem">
+                        <span style="font-weight:700;font-size:0.95rem;
+                                     color:<%= aprobado ? '#1E293B' : '#C0392B' %>">
+                          <%= parseFloat(nota.nota_numerica).toFixed(1) %>
+                        </span>
+                      </td>
+                      <td class="text-center" style="padding:0.65rem 0.75rem">
+                        <span class="px-2 py-1 rounded"
+                              style="background:<%= bgBadge %>;color:<%= colBadge %>;
+                                     font-size:0.75rem;font-weight:700">
+                          <%= nota.coeficiente %>
+                        </span>
+                      </td>
+                    </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              <% } %>
+            </div>
+
+          </div>
+        </div>
+
+        <% }); %>
+      </div>
+
+    <% } %>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
