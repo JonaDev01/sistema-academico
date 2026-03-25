@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('../partials/head') %></head>
+<body>
+<%- include('../partials/sidebar', { paginaActual: 'grados' }) %>
+
+<div id="main-content">
+
+  <%# ── Topbar ── %>
+  <div id="topbar">
+    <h1 class="page-title">
+      <i class="bi bi-diagram-3 me-2" style="color:var(--accent)"></i>Grados y Materias
+    </h1>
+    <a href="/grados/nuevo" class="btn btn-sm btn-navy">
+      <i class="bi bi-plus-lg me-1"></i>Nuevo grado
+    </a>
+  </div>
+
+  <div class="p-4">
+
+    <%# ── Alertas ── %>
+    <% if (mensaje) { %>
+    <div class="alert alert-success d-flex align-items-center gap-2 py-2 mb-4"
+         style="border-radius:8px;font-size:0.875rem">
+      <i class="bi bi-check-circle-fill"></i><%= mensaje %>
+    </div>
+    <% } %>
+    <% if (error) { %>
+    <div class="alert alert-danger d-flex align-items-center gap-2 py-2 mb-4"
+         style="border-radius:8px;font-size:0.875rem">
+      <i class="bi bi-exclamation-circle-fill"></i><%= error %>
+    </div>
+    <% } %>
+
+    <%# ── Primaria ── %>
+    <% const preescolar = grados.filter(g => g.nivel === 'preescolar'); %>
+    <% const primaria   = grados.filter(g => g.nivel === 'primaria'); %>
+    <% const secundaria = grados.filter(g => g.nivel === 'secundaria'); %>
+
+    <% [['Preescolar', preescolar, '#854F0B', '#FFF8E6'],
+        ['Primaria', primaria, '#0F6E56', '#CCFBF1'],
+        ['Secundaria', secundaria, '#1A4A8A', '#DBEAFE']].forEach(([label, lista, color, bgLight]) => { %>
+
+    <div class="mb-5">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <h2 style="font-family:'Playfair Display',serif;color:var(--navy);
+                   font-size:1.2rem;margin:0"><%= label %></h2>
+        <span class="badge rounded-pill"
+              style="background:<%= bgLight %>;color:<%= color %>;font-size:0.75rem">
+          <%= lista.length %> grados
+        </span>
+        <div style="flex:1;height:1px;background:#E2E8F0"></div>
+      </div>
+
+      <% if (lista.length === 0) { %>
+        <div class="card p-4 text-center" style="border:2px dashed #E2E8F0">
+          <p class="mb-2" style="color:#94A3B8;font-size:0.875rem">
+            No hay grados de <%= label.toLowerCase() %> registrados todavía.
+          </p>
+          <a href="/grados/nuevo" class="btn btn-sm btn-navy d-inline-flex align-items-center gap-1 mx-auto"
+             style="width:fit-content">
+            <i class="bi bi-plus-lg"></i>Agregar grado
+          </a>
+        </div>
+      <% } else { %>
+        <div class="row g-3">
+          <% lista.forEach(grado => { %>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100"
+                 style="<%= !grado.activo ? 'opacity:0.55;border-style:dashed' : '' %>">
+
+              <%# Header de la tarjeta %>
+              <div class="d-flex align-items-center justify-content-between p-3"
+                   style="border-bottom:1px solid #F1F5F9">
+                <div>
+                  <div style="font-family:'Playfair Display',serif;
+                               color:<%= grado.activo ? 'var(--navy)' : '#94A3B8' %>;
+                               font-size:1rem;font-weight:600">
+                    <%= grado.nombre %>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mt-1">
+                    <span style="font-size:0.72rem;color:#94A3B8">
+                      Orden <%= grado.orden %>
+                    </span>
+                    <% if (!grado.activo) { %>
+                    <span class="badge"
+                          style="background:#FEE2E2;color:#C0392B;font-size:0.68rem">
+                      Inactivo
+                    </span>
+                    <% } %>
+                  </div>
+                </div>
+                <div class="dropdown">
+                  <button class="btn btn-sm"
+                          style="background:var(--bg);border:1px solid #E2E8F0"
+                          data-bs-toggle="dropdown">
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm"
+                      style="font-size:0.875rem">
+                    <li>
+                      <a class="dropdown-item" href="/grados/<%= grado.id %>/editar">
+                        <i class="bi bi-pencil me-2 text-primary"></i>Editar grado
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="/grados/<%= grado.id %>/materias">
+                        <i class="bi bi-book me-2" style="color:var(--accent)"></i>
+                        Ver materias (<%= grado.materias ? grado.materias.length : 0 %>)
+                      </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <form method="POST" action="/grados/<%= grado.id %>/toggle">
+                        <button type="submit" class="dropdown-item"
+                                style="color:<%= grado.activo ? '#C0392B' : '#1E7E4A' %>">
+                          <i class="bi bi-<%= grado.activo ? 'eye-slash' : 'eye' %> me-2"></i>
+                          <%= grado.activo ? 'Desactivar' : 'Activar' %>
+                        </button>
+                      </form>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <%# Materias del grado %>
+              <div class="p-3">
+                <% const mats = grado.materias || []; %>
+                <% if (mats.length === 0) { %>
+                  <p style="font-size:0.8rem;color:#94A3B8;margin:0">
+                    <i class="bi bi-dash-circle me-1"></i>Sin materias asignadas
+                  </p>
+                <% } else { %>
+                  <div class="d-flex flex-wrap gap-1">
+                    <% mats.slice(0, 4).forEach(m => { %>
+                    <span class="badge"
+                          style="background:<%= bgLight %>;color:<%= color %>;
+                                 font-size:0.72rem;font-weight:500">
+                      <%= m.nombre %>
+                    </span>
+                    <% }); %>
+                    <% if (mats.length > 4) { %>
+                    <span class="badge"
+                          style="background:#F1EFE8;color:#888780;font-size:0.72rem">
+                      +<%= mats.length - 4 %> más
+                    </span>
+                    <% } %>
+                  </div>
+                <% } %>
+              </div>
+
+              <%# Footer con botón de materias %>
+              <div class="px-3 pb-3 mt-auto">
+                <a href="/grados/<%= grado.id %>/materias"
+                   class="btn btn-sm w-100"
+                   style="background:<%= bgLight %>;color:<%= color %>;
+                          border:1px solid <%= color %>20;font-size:0.8rem">
+                  <i class="bi bi-book me-1"></i>
+                  Gestionar materias (<%= mats.length %>)
+                </a>
+              </div>
+
+            </div>
+          </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+
+    <% }); %>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -69,9 +69,11 @@ const Estudiante = sequelize.define('Estudiante', {
 
   // ── DATOS PERSONALES ─────────────────────────────────────
   // La EDAD no se guarda — se calcula dinámicamente desde fecha_nacimiento
+  // allowNull: true para compatibilidad con importación de Excel
+  // (algunos registros no tienen fecha). El formulario la requiere a nivel HTML.
   fecha_nacimiento: {
-    type:      DataTypes.DATEONLY,   // Solo fecha, sin hora
-    allowNull: false,
+    type:      DataTypes.DATEONLY,
+    allowNull: true,
     validate:  { isDate: { msg: 'La fecha de nacimiento no es válida' } },
   },
 
@@ -81,7 +83,7 @@ const Estudiante = sequelize.define('Estudiante', {
   },
 
   nivel: {
-    type:      DataTypes.ENUM('primaria', 'secundaria'),
+    type:      DataTypes.ENUM('preescolar', 'primaria', 'secundaria'),
     allowNull: false,
   },
 

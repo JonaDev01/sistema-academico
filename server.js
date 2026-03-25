@@ -4,9 +4,7 @@ const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const path = require('path');
 require('dotenv').config();
 
-// Línea nueva
 const { sequelize } = require('./src/config/database');
-const authRoutes = require('./src/routes/auth.routes');
 
 const app = express();
 
@@ -36,13 +34,25 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rutas
-const dashboardRoutes = require('./src/routes/dashboard.routes');
+// ── Rutas ─────────────────────────────────────────────────────
+// REGLA: rutas con segmentos fijos (/nuevo, /importar) ANTES
+//        que rutas con parámetros dinámicos (/:id)
+
+const authRoutes       = require('./src/routes/auth.routes');
+const dashboardRoutes  = require('./src/routes/dashboard.routes');
+const gradosRoutes     = require('./src/routes/grados.routes');
+const materiasRoutes   = require('./src/routes/materias.routes');
+const importarRoutes   = require('./src/routes/importar.routes');   // ← antes de estudiantes
+const exportarRoutes   = require('./src/routes/exportar.routes');   // ← antes de estudiantes
+const estudiantesRoutes = require('./src/routes/estudiantes.routes'); // ← al final
+
 app.use('/', authRoutes);
 app.use('/', dashboardRoutes);
-
-const estudiantesRoutes = require('./src/routes/estudiantes.routes');
-app.use('/', estudiantesRoutes);
+app.use('/', gradosRoutes);
+app.use('/', materiasRoutes);
+app.use('/', importarRoutes);    // ← /estudiantes/importar
+app.use('/', exportarRoutes);    // ← /estudiantes/exportar
+app.use('/', estudiantesRoutes); // ← /estudiantes/:id
 
 // Ruta 404
 app.use((req, res) => {
@@ -54,7 +64,6 @@ const PORT = process.env.PORT || 3000;
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Conexión a PostgreSQL exitosa');
-    // DESPUÉS
     return sequelize.sync({ alter: false });
   })
   .then(() => {

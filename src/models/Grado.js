@@ -24,7 +24,7 @@ const Grado = sequelize.define('Grado', {
   },
 
   nivel: {
-    type:      DataTypes.ENUM('primaria', 'secundaria'),
+    type:      DataTypes.ENUM('preescolar', 'primaria', 'secundaria'),
     allowNull: false,
   },
 
@@ -40,6 +40,21 @@ const Grado = sequelize.define('Grado', {
     type:         DataTypes.BOOLEAN,
     allowNull:    false,
     defaultValue: true,
+  },
+
+  // Clave de mapeo para el importador de Excel.
+  // Junto con modalidad_importacion forma la combinación única
+  // que identifica exactamente a qué grado pertenece cada estudiante del Excel.
+  nivel_importacion: {
+    type:      DataTypes.STRING(30),
+    allowNull: true,
+  },
+
+  // Modalidad del Excel: PREESCOLAR FORMAL, PRIMARIA REGULAR, SECUNDARIA REGULAR
+  // Necesario para distinguir "Primero Preescolar" de "Primero Primaria"
+  modalidad_importacion: {
+    type:      DataTypes.STRING(30),
+    allowNull: true,
   },
 
 }, {
