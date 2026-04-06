@@ -24,8 +24,14 @@ const Grado = sequelize.define('Grado', {
   },
 
   nivel: {
-    type:      DataTypes.ENUM('preescolar', 'primaria', 'secundaria'),
+    type:      DataTypes.STRING(20),
     allowNull: false,
+    validate: {
+      isIn: {
+        args: [['preescolar', 'primaria', 'secundaria']],
+        msg: 'El nivel debe ser preescolar, primaria o secundaria',
+      },
+    },
   },
 
   // Para mostrar la lista en el orden correcto (1°, 2°, 3°...)

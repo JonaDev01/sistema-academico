@@ -38,33 +38,29 @@
 
     <% if (usuario.rol === 'admin') { %>
 
-      <%# ── Tarjetas de estadísticas ── %>
-      <div class="row g-3 mb-4">
-
+      <%# ── Fila 1: stats principales ── %>
+      <div class="row g-3 mb-3">
         <div class="col-6 col-md-3">
-          <div class="card stat-card p-3">
-            <div class="stat-number"><%= stats.totalEstudiantes %></div>
-            <div class="stat-label">Estudiantes</div>
+          <div class="card stat-card p-3" style="border-left-color:var(--accent)">
+            <div class="stat-number"><%= stats.totalEstudiantes || 0 %></div>
+            <div class="stat-label">Estudiantes activos</div>
             <a href="/estudiantes" class="stretched-link"></a>
           </div>
         </div>
-
         <div class="col-6 col-md-3">
           <div class="card stat-card p-3" style="border-left-color:#1A4A8A">
-            <div class="stat-number"><%= stats.totalDocentes %></div>
+            <div class="stat-number"><%= stats.totalDocentes || 0 %></div>
             <div class="stat-label">Docentes</div>
             <a href="/docentes" class="stretched-link"></a>
           </div>
         </div>
-
         <div class="col-6 col-md-3">
           <div class="card stat-card p-3" style="border-left-color:#0F6E56">
-            <div class="stat-number"><%= stats.totalGrados %></div>
-            <div class="stat-label">Grados</div>
+            <div class="stat-number"><%= stats.totalGrados || 0 %></div>
+            <div class="stat-label">Grados activos</div>
             <a href="/grados" class="stretched-link"></a>
           </div>
         </div>
-
         <div class="col-6 col-md-3">
           <div class="card stat-card p-3" style="border-left-color:#6D28D9">
             <div class="stat-number">
@@ -73,12 +69,43 @@
             <div class="stat-label">
               Corte activo
               <% if (stats.periodoActivo) { %>
-                <span class="d-block" style="font-size:0.7rem"><%= stats.periodoActivo.anio %></span>
+              <span class="d-block" style="font-size:0.7rem"><%= stats.periodoActivo.anio %></span>
               <% } %>
             </div>
           </div>
         </div>
+      </div>
 
+      <%# ── Fila 2: stats secundarias ── %>
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="card p-3" style="border-left:4px solid #D4870A">
+            <div style="font-size:1.5rem;font-weight:700;color:#D4870A"><%= stats.totalRepitentes || 0 %></div>
+            <div style="font-size:0.72rem;color:#64748B;text-transform:uppercase;letter-spacing:0.04em">Repitentes</div>
+            <a href="/estudiantes?estado_matricula=repitente" class="stretched-link"></a>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card p-3" style="border-left:4px solid #C0392B">
+            <div style="font-size:1.5rem;font-weight:700;color:#C0392B"><%= stats.totalPagosPendientes || 0 %></div>
+            <div style="font-size:0.72rem;color:#64748B;text-transform:uppercase;letter-spacing:0.04em">Pagos pendientes</div>
+            <a href="/estudiantes?estado_pago=pendiente" class="stretched-link"></a>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card p-3" style="border-left:4px solid #6D28D9">
+            <div style="font-size:1.5rem;font-weight:700;color:#6D28D9"><%= stats.totalBecados || 0 %></div>
+            <div style="font-size:0.72rem;color:#64748B;text-transform:uppercase;letter-spacing:0.04em">Con beca</div>
+            <a href="/estudiantes" class="stretched-link"></a>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card p-3" style="border-left:4px solid #0F6E56">
+            <div style="font-size:1.5rem;font-weight:700;color:#0F6E56"><%= stats.totalNotas || 0 %></div>
+            <div style="font-size:0.72rem;color:#64748B;text-transform:uppercase;letter-spacing:0.04em">Notas registradas</div>
+            <a href="/notas" class="stretched-link"></a>
+          </div>
+        </div>
       </div>
 
       <%# ── Accesos rápidos ── %>
@@ -159,7 +186,7 @@
         </div>
 
         <div class="col-12 col-md-4">
-          <a href="/reportes/boletin" class="card p-3 text-decoration-none d-flex flex-row align-items-center gap-3"
+          <a href="/boletin" class="card p-3 text-decoration-none d-flex flex-row align-items-center gap-3"
              style="border-left:4px solid #993556">
             <div class="rounded-circle d-flex align-items-center justify-content-center"
                  style="width:44px;height:44px;background:#FBEAF0;flex-shrink:0">
@@ -177,6 +204,40 @@
     <% } else { %>
 
       <%# ── Vista del docente ── %>
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="card p-3" style="border-left:4px solid var(--accent)">
+            <div style="font-size:1.8rem;font-weight:700;color:var(--navy)"><%= stats.clases || 0 %></div>
+            <div style="font-size:0.72rem;color:#64748B;text-transform:uppercase">Clases asignadas</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card p-3" style="border-left:4px solid #1A4A8A">
+            <div style="font-size:1.8rem;font-weight:700;color:var(--navy)"><%= stats.estudiantes || 0 %></div>
+            <div style="font-size:0.72rem;color:#64748B;text-transform:uppercase">Estudiantes</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card p-3" style="border-left:4px solid #0F6E56">
+            <div style="font-size:1.8rem;font-weight:700;color:var(--navy)"><%= stats.notasIngresadas || 0 %></div>
+            <div style="font-size:0.72rem;color:#64748B;text-transform:uppercase">Notas ingresadas</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card p-3" style="border-left:4px solid #6D28D9">
+            <div style="font-size:1.8rem;font-weight:700;color:var(--navy)">
+              <%= stats.periodoActivo ? `C${stats.periodoActivo.corte}` : '—' %>
+            </div>
+            <div style="font-size:0.72rem;color:#64748B;text-transform:uppercase">
+              Corte activo
+              <% if (stats.periodoActivo) { %>
+              <span class="d-block"><%= stats.periodoActivo.anio %></span>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="row g-3">
         <div class="col-12 col-md-6">
           <a href="/notas" class="card p-4 text-decoration-none d-flex flex-row align-items-center gap-3"
@@ -185,6 +246,16 @@
             <div>
               <div class="fw-600" style="color:var(--navy)">Registrar Notas</div>
               <div class="text-muted" style="font-size:0.85rem">Ver y registrar notas de tus clases</div>
+            </div>
+          </a>
+        </div>
+        <div class="col-12 col-md-6">
+          <a href="/estudiantes" class="card p-4 text-decoration-none d-flex flex-row align-items-center gap-3"
+             style="border-left:4px solid #1A4A8A">
+            <i class="bi bi-people" style="font-size:2rem;color:#1A4A8A"></i>
+            <div>
+              <div class="fw-600" style="color:var(--navy)">Ver Estudiantes</div>
+              <div class="text-muted" style="font-size:0.85rem">Consultar información de tus alumnos</div>
             </div>
           </a>
         </div>

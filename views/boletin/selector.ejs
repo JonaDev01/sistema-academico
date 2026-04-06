@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('../partials/head') %></head>
+<body>
+<%- include('../partials/sidebar', { paginaActual: 'boletin' }) %>
+<div id="main-content">
+
+  <div id="topbar">
+    <h1 class="page-title">
+      <i class="bi bi-file-earmark-pdf me-2" style="color:var(--accent)"></i>Boletín PDF
+    </h1>
+  </div>
+
+  <div class="p-4">
+    <% if (error) { %>
+    <div class="alert alert-danger d-flex align-items-center gap-2 py-2 mb-3" style="border-radius:8px;font-size:0.875rem">
+      <i class="bi bi-exclamation-circle-fill"></i><%= error %>
+    </div>
+    <% } %>
+
+    <div class="row g-4">
+
+      <%# Formulario de selección %>
+      <div class="col-12 col-lg-5">
+        <div class="card">
+          <div class="card-header-custom">
+            <i class="bi bi-sliders me-2"></i>Seleccionar estudiante
+          </div>
+          <div class="p-4">
+
+            <div class="mb-3">
+              <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase">
+                Grado <span style="color:#C0392B">*</span>
+              </label>
+              <select id="sel-grado" class="form-select" onchange="cargarEstudiantes(this.value)">
+                <option value="">Seleccionar grado...</option>
+                <% grados.forEach(g => { %>
+                <option value="<%= g.id %>"><%= g.nombre %></option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase">
+                Estudiante <span style="color:#C0392B">*</span>
+              </label>
+              <select id="sel-estudiante" class="form-select" disabled>
+                <option value="">Primero selecciona un grado...</option>
+              </select>
+            </div>
+
+            <button class="btn btn-navy w-100" onclick="generarBoletin()"
+                    id="btn-generar" disabled>
+              <i class="bi bi-file-earmark-pdf me-1"></i>Generar boletín PDF
+            </button>
+
+            <div id="cargando" style="display:none" class="mt-3 text-center">
+              <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+              <span style="font-size:0.875rem;color:#64748B">Generando PDF, espera un momento...</span>
+            </div>
+
+          </div>
+        </div>
+
+        <%# Instrucciones %>
+        <div class="card mt-3 p-3" style="background:#F8FAFC;border:1px solid #E2E8F0">
+          <p style="font-size:0.78rem;font-weight:600;color:var(--navy);margin-bottom:0.5rem">
+            <i class="bi bi-info-circle me-1"></i>Información
+          </p>
+          <ul style="font-size:0.75rem;color:#64748B;padding-left:1.2rem;margin:0">
+            <li>El boletín incluye todos los cortes del año actual.</li>
+            <li>Preescolar: solo valoración cualitativa (AA/AS/AF/AI).</li>
+            <li>Primaria y Secundaria: nota numérica + valoración.</li>
+            <li>Las celdas vacías corresponden a cortes sin nota registrada.</li>
+            <li>La valoración final es el promedio de los cortes con nota.</li>
+          </ul>
+        </div>
+      </div>
+
+      <%# Vista previa info %>
+      <div class="col-12 col-lg-7">
+        <div class="card p-4 text-center" id="preview-placeholder">
+          <i class="bi bi-file-earmark-pdf" style="font-size:3rem;color:#D3D1C7"></i>
+          <p class="mt-3 mb-1" style="color:#94A3B8;font-size:0.875rem">
+            Selecciona un estudiante para generar su boletín.
+          </p>
+          <p style="color:#CBD5E1;font-size:0.78rem">
+            El PDF se descargará automáticamente.
+          </p>
+        </div>
+
+        <div id="preview-info" style="display:none">
+          <div class="card" style="border-left:4px solid var(--accent)">
+            <div style="padding:1rem 1.25rem">
+              <h3 id="prev-nombre" style="font-family:'Playfair Display',serif;color:var(--navy);font-size:1.1rem;margin-bottom:4px"></h3>
+              <div id="prev-detalle" style="font-size:0.78rem;color:#64748B"></div>
+            </div>
+          </div>
+          <div class="card mt-3 p-3" style="background:#FFF8E6;border-left:4px solid var(--accent)">
+            <p style="font-size:0.8rem;color:#D4870A;margin:0">
+              <i class="bi bi-exclamation-triangle me-1"></i>
+              <strong>El PDF incluirá:</strong> tabla de notas por corte y semestre, observaciones en blanco para que el docente las llene, y espacios para firmas del tutor y docente por cada corte.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  let estudiantesData = [];
+
+  async function cargarEstudiantes(gradoId) {
+    const sel = document.getElementById('sel-estudiante');
+    const btn = document.getElementById('btn-generar');
+
+    sel.innerHTML = '<option value="">Cargando...</option>';
+    sel.disabled  = true;
+    btn.disabled  = true;
+
+    if (!gradoId) {
+      sel.innerHTML = '<option value="">Primero selecciona un grado...</option>';
+      return;
+    }
+
+    const resp = await fetch(`/boletin/estudiantes?grado_id=${gradoId}`);
+    estudiantesData = await resp.json();
+
+    sel.innerHTML = '<option value="">Seleccionar estudiante...</option>';
+    estudiantesData.forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = e.id;
+      opt.textContent = `${e.apellido1}${e.apellido2 ? ' ' + e.apellido2 : ''}, ${e.nombre1}${e.nombre2 ? ' ' + e.nombre2 : ''}`;
+      sel.appendChild(opt);
+    });
+    sel.disabled = false;
+    sel.onchange = actualizarPreview;
+  }
+
+  function actualizarPreview() {
+    const sel = document.getElementById('sel-estudiante');
+    const est = estudiantesData.find(e => e.id == sel.value);
+    const btn = document.getElementById('btn-generar');
+
+    if (!est) {
+      document.getElementById('preview-placeholder').style.display = 'block';
+      document.getElementById('preview-info').style.display = 'none';
+      btn.disabled = true;
+      return;
+    }
+
+    document.getElementById('preview-placeholder').style.display = 'none';
+    document.getElementById('preview-info').style.display = 'block';
+    document.getElementById('prev-nombre').textContent =
+      `${est.nombre1}${est.nombre2 ? ' ' + est.nombre2 : ''} ${est.apellido1}${est.apellido2 ? ' ' + est.apellido2 : ''}`;
+    document.getElementById('prev-detalle').textContent =
+      `Código: ${est.codigo_estudiante || '—'}`;
+    btn.disabled = false;
+  }
+
+  function generarBoletin() {
+    const estId = document.getElementById('sel-estudiante').value;
+    if (!estId) return;
+
+    document.getElementById('cargando').style.display = 'block';
+    document.getElementById('btn-generar').disabled = true;
+
+    // Abrir en nueva pestaña para descarga
+    window.open(`/boletin/generar?estudiante_id=${estId}`, '_blank');
+
+    // Restaurar después de 4 segundos
+    setTimeout(() => {
+      document.getElementById('cargando').style.display = 'none';
+      document.getElementById('btn-generar').disabled = false;
+    }, 4000);
+  }
+</script>
+</body>
+</html>

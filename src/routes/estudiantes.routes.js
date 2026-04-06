@@ -19,5 +19,6 @@ router.get( '/estudiantes/:id/notas',        verificarAuth,  ctrl.verNotas);
 router.get( '/estudiantes/:id/editar',       verificarAdmin, ctrl.mostrarFormEditar);
 router.post('/estudiantes/:id/editar',       verificarAdmin, ctrl.actualizarEstudiante);
 router.post('/estudiantes/:id/toggle',       verificarAdmin, ctrl.toggleEstudiante);
+router.post('/estudiantes/:id/campo',        verificarAdmin, ctrl.actualizarCampoRapido);
 
 module.exports = router;

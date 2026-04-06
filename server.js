@@ -42,7 +42,11 @@ const authRoutes       = require('./src/routes/auth.routes');
 const dashboardRoutes  = require('./src/routes/dashboard.routes');
 const gradosRoutes     = require('./src/routes/grados.routes');
 const materiasRoutes   = require('./src/routes/materias.routes');
-const importarRoutes   = require('./src/routes/importar.routes');   // ← antes de estudiantes
+const docentesRoutes   = require('./src/routes/docentes.routes');
+const notasRoutes          = require('./src/routes/notas.routes');
+const exportarNotasRoutes  = require('./src/routes/exportarNotas.routes');
+const boletinRoutes        = require('./src/routes/boletin.routes');
+const importarRoutes       = require('./src/routes/importar.routes');   // ← antes de estudiantes
 const exportarRoutes   = require('./src/routes/exportar.routes');   // ← antes de estudiantes
 const estudiantesRoutes = require('./src/routes/estudiantes.routes'); // ← al final
 
@@ -50,6 +54,10 @@ app.use('/', authRoutes);
 app.use('/', dashboardRoutes);
 app.use('/', gradosRoutes);
 app.use('/', materiasRoutes);
+app.use('/', docentesRoutes);
+app.use('/', notasRoutes);
+app.use('/', exportarNotasRoutes);
+app.use('/', boletinRoutes);
 app.use('/', importarRoutes);    // ← /estudiantes/importar
 app.use('/', exportarRoutes);    // ← /estudiantes/exportar
 app.use('/', estudiantesRoutes); // ← /estudiantes/:id

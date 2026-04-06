@@ -294,8 +294,35 @@ function _extraerDatos(body) {
   };
 }
 
+// ── POST /estudiantes/:id/campo ──────────────────────────────
+// Actualiza un campo individual desde la lista — sin entrar al formulario completo
+const actualizarCampoRapido = async (req, res) => {
+  try {
+    const { id }   = req.params;
+    const { campo, valor } = req.body;
+
+    // Solo permitir campos específicos para seguridad
+    const camposPermitidos = ['estado_matricula', 'estado_pago', 'tipo_beca', 'en_proyecto'];
+    if (!camposPermitidos.includes(campo)) {
+      return res.json({ ok: false, mensaje: 'Campo no permitido' });
+    }
+
+    const estudiante = await Estudiante.findByPk(id);
+    if (!estudiante) return res.json({ ok: false, mensaje: 'Estudiante no encontrado' });
+
+    // Convertir en_proyecto a boolean
+    const valorFinal = campo === 'en_proyecto' ? valor === 'true' : valor;
+    await estudiante.update({ [campo]: valorFinal });
+
+    res.json({ ok: true, valor: valorFinal });
+  } catch (error) {
+    console.error('Error en actualizarCampoRapido:', error);
+    res.json({ ok: false, mensaje: 'Error al actualizar' });
+  }
+};
+
 module.exports = {
   listarEstudiantes, mostrarFormNuevo, crearEstudiante,
   mostrarFormEditar, actualizarEstudiante, toggleEstudiante,
-  verPerfil, verNotas,
+  actualizarCampoRapido, verPerfil, verNotas,
 };

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('../partials/head') %></head>
+<body>
+<%- include('../partials/sidebar', { paginaActual: 'docentes' }) %>
+<div id="main-content">
+
+  <div id="topbar">
+    <h1 class="page-title">
+      <i class="bi bi-person-badge me-2" style="color:var(--accent)"></i>Docentes
+    </h1>
+    <a href="/docentes/nuevo" class="btn btn-sm btn-navy">
+      <i class="bi bi-plus-lg me-1"></i>Nuevo docente
+    </a>
+  </div>
+
+  <div class="p-4">
+    <% if (mensaje) { %>
+    <div class="alert alert-success d-flex align-items-center gap-2 py-2 mb-3" style="border-radius:8px;font-size:0.875rem">
+      <i class="bi bi-check-circle-fill"></i><%= mensaje %>
+    </div>
+    <% } %>
+    <% if (error) { %>
+    <div class="alert alert-danger d-flex align-items-center gap-2 py-2 mb-3" style="border-radius:8px;font-size:0.875rem">
+      <i class="bi bi-exclamation-circle-fill"></i><%= error %>
+    </div>
+    <% } %>
+
+    <div class="card">
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid #F1F5F9">
+        <span style="font-size:0.875rem;color:#64748B">
+          <strong style="color:var(--navy)"><%= docentes.length %></strong> docentes registrados
+        </span>
+      </div>
+
+      <% if (docentes.length === 0) { %>
+      <div class="p-5 text-center">
+        <i class="bi bi-person-badge" style="font-size:2.5rem;color:#D3D1C7"></i>
+        <p class="mt-3 mb-2" style="color:#64748B">No hay docentes registrados todavía.</p>
+        <a href="/docentes/nuevo" class="btn btn-sm btn-navy">
+          <i class="bi bi-plus-lg me-1"></i>Crear primer docente
+        </a>
+      </div>
+      <% } else { %>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0" style="font-size:0.875rem">
+          <thead style="background:#F8FAFC">
+            <tr>
+              <th style="padding:0.7rem 1rem;color:#475569;font-weight:600;font-size:0.75rem;text-transform:uppercase">Nombre</th>
+              <th style="padding:0.7rem;color:#475569;font-weight:600;font-size:0.75rem;text-transform:uppercase">Usuario</th>
+              <th style="padding:0.7rem;color:#475569;font-weight:600;font-size:0.75rem;text-transform:uppercase">Especialidad</th>
+              <th class="text-center" style="padding:0.7rem;color:#475569;font-weight:600;font-size:0.75rem;text-transform:uppercase">Clases</th>
+              <th class="text-center" style="padding:0.7rem;color:#475569;font-weight:600;font-size:0.75rem;text-transform:uppercase">Estado</th>
+              <th style="width:140px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% docentes.forEach(doc => { %>
+            <tr style="border-bottom:1px solid #F8FAFC">
+              <td style="padding:0.65rem 1rem">
+                <div style="font-weight:600;color:var(--navy)"><%= doc.nombre %> <%= doc.apellido %></div>
+                <% if (doc.telefono) { %>
+                <div style="font-size:0.75rem;color:#64748B"><i class="bi bi-telephone me-1"></i><%= doc.telefono %></div>
+                <% } %>
+              </td>
+              <td style="padding:0.65rem 0.75rem;font-family:'Courier New';font-size:0.8rem;color:#64748B">
+                <%= doc.usuario ? doc.usuario.username : '—' %>
+              </td>
+              <td style="padding:0.65rem 0.75rem;color:#475569">
+                <%= doc.especialidad || '—' %>
+              </td>
+              <td class="text-center" style="padding:0.65rem 0.75rem">
+                <span class="badge" style="background:#CCFBF1;color:#0F6E56;font-size:0.72rem">
+                  <%= doc.asignaciones ? doc.asignaciones.length : 0 %> clases
+                </span>
+              </td>
+              <td class="text-center" style="padding:0.65rem 0.75rem">
+                <% const activo = doc.usuario && doc.usuario.activo; %>
+                <span class="badge" style="background:<%= activo ? '#DCFCE7' : '#FEE2E2' %>;
+                                          color:<%= activo ? '#1E7E4A' : '#C0392B' %>;font-size:0.72rem">
+                  <%= activo ? 'Activo' : 'Inactivo' %>
+                </span>
+              </td>
+              <td style="padding:0.65rem 0.75rem">
+                <div class="d-flex gap-1 justify-content-end">
+                  <a href="/docentes/<%= doc.id %>"
+                     class="btn btn-sm" style="background:#F1EFE8;color:#5F5E5A;border:none;padding:0.25rem 0.5rem"
+                     title="Ver perfil"><i class="bi bi-info-circle" style="font-size:0.75rem"></i></a>
+                  <a href="/docentes/<%= doc.id %>/asignaciones"
+                     class="btn btn-sm" style="background:#CCFBF1;color:#0F6E56;border:none;padding:0.25rem 0.5rem"
+                     title="Asignaciones"><i class="bi bi-diagram-3" style="font-size:0.75rem"></i></a>
+                  <a href="/docentes/<%= doc.id %>/editar"
+                     class="btn btn-sm" style="background:#EFF6FF;color:#1A4A8A;border:none;padding:0.25rem 0.5rem"
+                     title="Editar"><i class="bi bi-pencil" style="font-size:0.75rem"></i></a>
+                  <form method="POST" action="/docentes/<%= doc.id %>/toggle" style="display:inline">
+                    <button type="submit" class="btn btn-sm"
+                            style="background:<%= activo ? '#FFF1F0' : '#F0FDF4' %>;
+                                   color:<%= activo ? '#C0392B' : '#1E7E4A' %>;border:none;padding:0.25rem 0.5rem"
+                            title="<%= activo ? 'Desactivar' : 'Activar' %>"
+                            onclick="return confirm('¿Confirmas este cambio?')">
+                      <i class="bi bi-<%= activo ? 'person-dash' : 'person-check' %>" style="font-size:0.75rem"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

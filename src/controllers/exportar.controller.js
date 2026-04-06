@@ -74,7 +74,7 @@ const exportarEstudiantes = async (req, res) => {
     // Agregar datos
     estudiantes.forEach((est, idx) => {
       const fila = hoja.addRow({
-        codigo:           est.codigo_estudiante,
+        codigo:           est.codigo_estudiante || '',
         apellido1:        est.apellido1,
         apellido2:        est.apellido2        || '',
         nombre1:          est.nombre1,

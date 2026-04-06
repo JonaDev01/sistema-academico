@@ -165,9 +165,10 @@
           <tbody>
             <% estudiantes.forEach(est => {
               const estadoCfg = {
-                activo:   { bg:'#DCFCE7', color:'#1E7E4A', label:'Activo' },
-                retirado: { bg:'#FEE2E2', color:'#C0392B', label:'Retirado' },
-                egresado: { bg:'#DBEAFE', color:'#1A4A8A', label:'Egresado' },
+                activo:    { bg:'#DCFCE7', color:'#1E7E4A', label:'Activo' },
+                retirado:  { bg:'#FEE2E2', color:'#C0392B', label:'Retirado' },
+                egresado:  { bg:'#DBEAFE', color:'#1A4A8A', label:'Egresado' },
+                repitente: { bg:'#FFF8E6', color:'#D4870A', label:'Repitente' },
               }[est.estado_matricula] || {};
 
               const pagoCfg = {
@@ -181,9 +182,9 @@
                 semi_becado:{ bg:'#CCFBF1', color:'#0F6E56', label:'Semi' },
               }[est.tipo_beca] || {};
             %>
-            <tr style="border-bottom:1px solid #F8FAFC">
+            <tr style="border-bottom:1px solid #F8FAFC" id="fila-<%= est.id %>">
               <td style="padding:0.65rem 1rem;color:#64748B;font-size:0.8rem;font-family:'Courier New'">
-                <%= est.codigo_estudiante %>
+                <%= est.codigo_estudiante || '—' %>
               </td>
               <td style="padding:0.65rem 0.75rem">
                 <div style="font-weight:600;color:var(--navy)">
@@ -196,23 +197,111 @@
               <td style="padding:0.65rem 0.75rem;color:#475569">
                 <%= est.grado ? est.grado.nombre : '—' %>
               </td>
-              <td class="text-center" style="padding:0.65rem 0.75rem">
+
+              <%# ── Estado matrícula — dropdown rápido ── %>
+              <td class="text-center" style="padding:0.65rem 0.5rem">
+                <% if (usuario.rol === 'admin') { %>
+                <div class="dropdown">
+                  <span class="badge dropdown-toggle"
+                        id="est-badge-<%= est.id %>"
+                        style="background:<%= estadoCfg.bg %>;color:<%= estadoCfg.color %>;
+                               font-size:0.72rem;cursor:pointer"
+                        data-bs-toggle="dropdown">
+                    <%= estadoCfg.label %>
+                  </span>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size:0.8rem;min-width:140px">
+                    <li><a class="dropdown-item" href="#"
+                           onclick="cambiarCampo(<%= est.id %>,'estado_matricula','activo');return false">
+                      <span style="color:#1E7E4A">● Activo</span></a></li>
+                    <li><a class="dropdown-item" href="#"
+                           onclick="cambiarCampo(<%= est.id %>,'estado_matricula','repitente');return false">
+                      <span style="color:#D4870A">● Repitente</span></a></li>
+                    <li><a class="dropdown-item" href="#"
+                           onclick="cambiarCampo(<%= est.id %>,'estado_matricula','retirado');return false">
+                      <span style="color:#C0392B">● Retirado</span></a></li>
+                    <li><a class="dropdown-item" href="#"
+                           onclick="cambiarCampo(<%= est.id %>,'estado_matricula','egresado');return false">
+                      <span style="color:#1A4A8A">● Egresado</span></a></li>
+                  </ul>
+                </div>
+                <% } else { %>
                 <span class="badge" style="background:<%= estadoCfg.bg %>;color:<%= estadoCfg.color %>;font-size:0.72rem">
                   <%= estadoCfg.label %>
                 </span>
+                <% } %>
               </td>
-              <td class="text-center" style="padding:0.65rem 0.75rem">
+
+              <%# ── Estado pago — dropdown rápido ── %>
+              <td class="text-center" style="padding:0.65rem 0.5rem">
+                <% if (usuario.rol === 'admin') { %>
+                <div class="dropdown">
+                  <span class="badge dropdown-toggle"
+                        id="pago-badge-<%= est.id %>"
+                        style="background:<%= pagoCfg.bg %>;color:<%= pagoCfg.color %>;
+                               font-size:0.72rem;cursor:pointer"
+                        data-bs-toggle="dropdown">
+                    <%= pagoCfg.label %>
+                  </span>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size:0.8rem;min-width:130px">
+                    <li><a class="dropdown-item" href="#"
+                           onclick="cambiarCampo(<%= est.id %>,'estado_pago','al_dia');return false">
+                      <span style="color:#1E7E4A">● Al día</span></a></li>
+                    <li><a class="dropdown-item" href="#"
+                           onclick="cambiarCampo(<%= est.id %>,'estado_pago','pendiente');return false">
+                      <span style="color:#D4870A">● Pendiente</span></a></li>
+                  </ul>
+                </div>
+                <% } else { %>
                 <span class="badge" style="background:<%= pagoCfg.bg %>;color:<%= pagoCfg.color %>;font-size:0.72rem">
                   <%= pagoCfg.label %>
                 </span>
+                <% } %>
               </td>
-              <td class="text-center" style="padding:0.65rem 0.75rem">
+
+              <%# ── Beca — dropdown rápido ── %>
+              <td class="text-center" style="padding:0.65rem 0.5rem">
+                <% if (usuario.rol === 'admin') { %>
+                <div class="dropdown">
+                  <span class="badge dropdown-toggle"
+                        id="beca-badge-<%= est.id %>"
+                        style="background:<%= becaCfg.bg %>;color:<%= becaCfg.color %>;
+                               font-size:0.72rem;cursor:pointer"
+                        data-bs-toggle="dropdown">
+                    <%= becaCfg.label %>
+                  </span>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size:0.8rem;min-width:140px">
+                    <li><a class="dropdown-item" href="#"
+                           onclick="cambiarCampo(<%= est.id %>,'tipo_beca','ninguna');return false">
+                      <span style="color:#888780">● Sin beca</span></a></li>
+                    <li><a class="dropdown-item" href="#"
+                           onclick="cambiarCampo(<%= est.id %>,'tipo_beca','becado');return false">
+                      <span style="color:#6D28D9">● Becado</span></a></li>
+                    <li><a class="dropdown-item" href="#"
+                           onclick="cambiarCampo(<%= est.id %>,'tipo_beca','semi_becado');return false">
+                      <span style="color:#0F6E56">● Semi-becado</span></a></li>
+                  </ul>
+                </div>
+                <% } else { %>
                 <span class="badge" style="background:<%= becaCfg.bg %>;color:<%= becaCfg.color %>;font-size:0.72rem">
                   <%= becaCfg.label %>
                 </span>
+                <% } %>
               </td>
+
               <td style="padding:0.65rem 0.75rem">
-                <div class="d-flex gap-1 justify-content-end">
+                <div class="d-flex gap-1 justify-content-end align-items-center">
+                  <%# Proyecto toggle rápido %>
+                  <% if (usuario.rol === 'admin') { %>
+                  <button class="btn btn-sm"
+                          id="proy-<%= est.id %>"
+                          style="background:<%= est.en_proyecto ? '#CCFBF1' : '#F1EFE8' %>;
+                                 color:<%= est.en_proyecto ? '#0F6E56' : '#888780' %>;
+                                 border:none;padding:0.25rem 0.5rem;font-size:0.65rem;font-weight:600"
+                          title="<%= est.en_proyecto ? 'En proyecto — clic para quitar' : 'No está en proyecto — clic para agregar' %>"
+                          onclick="cambiarCampo(<%= est.id %>,'en_proyecto','<%= !est.en_proyecto %>')">
+                    PROY
+                  </button>
+                  <% } %>
                   <a href="/estudiantes/<%= est.id %>"
                      class="btn btn-sm"
                      style="background:#F1EFE8;color:#5F5E5A;border:none;padding:0.25rem 0.5rem"
@@ -229,20 +318,9 @@
                   <a href="/estudiantes/<%= est.id %>/editar"
                      class="btn btn-sm"
                      style="background:#EFF6FF;color:#1A4A8A;border:none;padding:0.25rem 0.5rem"
-                     title="Editar">
+                     title="Editar todo">
                     <i class="bi bi-pencil" style="font-size:0.75rem"></i>
                   </a>
-                  <form method="POST" action="/estudiantes/<%= est.id %>/toggle" style="display:inline">
-                    <button type="submit" class="btn btn-sm"
-                            style="background:<%= est.estado_matricula === 'activo' ? '#FFF1F0' : '#F0FDF4' %>;
-                                   color:<%= est.estado_matricula === 'activo' ? '#C0392B' : '#1E7E4A' %>;
-                                   border:none;padding:0.25rem 0.5rem"
-                            title="<%= est.estado_matricula === 'activo' ? 'Marcar como retirado' : 'Reactivar' %>"
-                            onclick="return confirm('¿Confirmas este cambio de estado?')">
-                      <i class="bi bi-<%= est.estado_matricula === 'activo' ? 'person-dash' : 'person-check' %>"
-                         style="font-size:0.75rem"></i>
-                    </button>
-                  </form>
                   <% } %>
                 </div>
               </td>
@@ -258,22 +336,78 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 <script>
+  // ── Cambio rápido de campo desde la tabla ────────────────
+  const estadoCfg = {
+    activo:    { bg:'#DCFCE7', color:'#1E7E4A', label:'Activo' },
+    retirado:  { bg:'#FEE2E2', color:'#C0392B', label:'Retirado' },
+    egresado:  { bg:'#DBEAFE', color:'#1A4A8A', label:'Egresado' },
+    repitente: { bg:'#FFF8E6', color:'#D4870A', label:'Repitente' },
+  };
+  const pagoCfg = {
+    al_dia:   { bg:'#DCFCE7', color:'#1E7E4A', label:'Al día' },
+    pendiente:{ bg:'#FFF8E6', color:'#D4870A', label:'Pendiente' },
+  };
+  const becaCfg = {
+    ninguna:    { bg:'#F1EFE8', color:'#888780', label:'—' },
+    becado:     { bg:'#EDE9FE', color:'#6D28D9', label:'Becado' },
+    semi_becado:{ bg:'#CCFBF1', color:'#0F6E56', label:'Semi' },
+  };
+
+  async function cambiarCampo(id, campo, valor) {
+    try {
+      const resp = await fetch(`/estudiantes/${id}/campo`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ campo, valor }),
+      });
+      const data = await resp.json();
+      if (!data.ok) { alert('Error: ' + data.mensaje); return; }
+
+      // Actualizar badge sin recargar la página
+      if (campo === 'estado_matricula') {
+        const cfg = estadoCfg[valor] || {};
+        const el  = document.getElementById(`est-badge-${id}`);
+        if (el) { el.style.background = cfg.bg; el.style.color = cfg.color; el.textContent = cfg.label + ' '; }
+      } else if (campo === 'estado_pago') {
+        const cfg = pagoCfg[valor] || {};
+        const el  = document.getElementById(`pago-badge-${id}`);
+        if (el) { el.style.background = cfg.bg; el.style.color = cfg.color; el.textContent = cfg.label + ' '; }
+      } else if (campo === 'tipo_beca') {
+        const cfg = becaCfg[valor] || {};
+        const el  = document.getElementById(`beca-badge-${id}`);
+        if (el) { el.style.background = cfg.bg; el.style.color = cfg.color; el.textContent = cfg.label + ' '; }
+      } else if (campo === 'en_proyecto') {
+        const esProy = valor === 'true';
+        const el = document.getElementById(`proy-${id}`);
+        if (el) {
+          el.style.background = esProy ? '#CCFBF1' : '#F1EFE8';
+          el.style.color      = esProy ? '#0F6E56' : '#888780';
+          el.title = esProy ? 'En proyecto — clic para quitar' : 'No está en proyecto — clic para agregar';
+          el.setAttribute('onclick', `cambiarCampo(${id},'en_proyecto','${!esProy}')`);
+        }
+      }
+    } catch (err) {
+      alert('Error de conexión');
+    }
+  }
+
+  // ── DataTables ──────────────────────────────────────────
   $(document).ready(function () {
     if ($('#tabla-estudiantes tbody tr').length > 0) {
       $('#tabla-estudiantes').DataTable({
-        paging:   true,
+        paging:    true,
         pageLength: 25,
-        searching: false,  // usamos nuestros propios filtros
-        ordering:  true,
+        searching:  false,
+        ordering:   true,
         language: {
-          lengthMenu:  'Mostrar _MENU_ por página',
-          info:        'Mostrando _START_ a _END_ de _TOTAL_ estudiantes',
-          paginate:    { previous: '‹', next: '›' },
-          emptyTable:  'No hay estudiantes',
+          lengthMenu: 'Mostrar _MENU_ por página',
+          info:       'Mostrando _START_ a _END_ de _TOTAL_ estudiantes',
+          paginate:   { previous: '‹', next: '›' },
+          emptyTable: 'No hay estudiantes',
         },
         columnDefs: [{ orderable: false, targets: -1 }],
       });

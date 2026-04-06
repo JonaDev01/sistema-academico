@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('../partials/head') %></head>
+<body>
+<%- include('../partials/sidebar', { paginaActual: 'notas' }) %>
+<div id="main-content">
+
+  <div id="topbar">
+    <h1 class="page-title">
+      <i class="bi bi-journal-check me-2" style="color:var(--accent)"></i>Registro de Notas
+    </h1>
+    <% if (gradoId && materiaId && periodoId) { %>
+    <div class="d-flex gap-2">
+      <a href="/notas/exportar/corte?grado_id=<%= gradoId %>&materia_id=<%= materiaId %>&periodo_id=<%= periodoId %>"
+         class="btn btn-sm"
+         style="background:#DCFCE7;color:#1E7E4A;border:1px solid #1E7E4A20">
+        <i class="bi bi-file-earmark-excel me-1"></i>Exportar corte
+      </a>
+      <a href="/notas/exportar/general?grado_id=<%= gradoId %>&materia_id=<%= materiaId %>"
+         class="btn btn-sm btn-navy">
+        <i class="bi bi-file-earmark-excel me-1"></i>Exportar general
+      </a>
+    </div>
+    <% } %>
+  </div>
+
+  <div class="p-4">
+
+    <% if (mensaje) { %>
+    <div class="alert alert-success d-flex align-items-center gap-2 py-2 mb-3" style="border-radius:8px;font-size:0.875rem">
+      <i class="bi bi-check-circle-fill"></i><%= mensaje %>
+    </div>
+    <% } %>
+    <% if (error) { %>
+    <div class="alert alert-danger d-flex align-items-center gap-2 py-2 mb-3" style="border-radius:8px;font-size:0.875rem">
+      <i class="bi bi-exclamation-circle-fill"></i><%= error %>
+    </div>
+    <% } %>
+
+    <%# ── Selector de grado / materia / corte ── %>
+    <div class="card mb-4">
+      <div class="card-header-custom">
+        <i class="bi bi-funnel me-2"></i>Seleccionar clase
+      </div>
+      <div class="p-3">
+        <form method="GET" action="/notas" id="form-selector">
+          <div class="row g-3 align-items-end">
+
+            <div class="col-12 col-md-4">
+              <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase">
+                Grado <span style="color:#C0392B">*</span>
+              </label>
+              <select name="grado_id" class="form-select" onchange="actualizarMaterias(this.value)" required>
+                <option value="">Seleccionar grado...</option>
+                <% grados.forEach(g => { %>
+                <option value="<%= g.id %>" <%= gradoId == g.id ? 'selected' : '' %>>
+                  <%= g.nombre %>
+                </option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase">
+                Materia <span style="color:#C0392B">*</span>
+              </label>
+              <select name="materia_id" id="sel-materia" class="form-select" required>
+                <option value="">Primero selecciona un grado...</option>
+                <% if (gradoId) {
+                   const gradoActual = grados.find(g => g.id == gradoId);
+                   if (gradoActual && gradoActual.materias) {
+                     gradoActual.materias.forEach(m => { %>
+                <option value="<%= m.id %>" <%= materiaId == m.id ? 'selected' : '' %>>
+                  <%= m.nombre %>
+                </option>
+                <%   });
+                   }
+                } %>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-3">
+              <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase">
+                Corte <span style="color:#C0392B">*</span>
+              </label>
+              <select name="periodo_id" class="form-select" required>
+                <% periodos.forEach(p => { %>
+                <option value="<%= p.id %>" <%= periodoId == p.id ? 'selected' : '' %>>
+                  Corte <%= p.corte %> — <%= p.anio %>
+                  <%= p.activo ? '(Actual)' : '' %>
+                </option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-1">
+              <button type="submit" class="btn btn-navy w-100">
+                <i class="bi bi-arrow-right"></i>
+              </button>
+            </div>
+
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <%# ── Tabla de notas ── %>
+    <% if (!gradoId || !materiaId || !periodoId) { %>
+
+    <div class="card p-5 text-center">
+      <i class="bi bi-journal-text" style="font-size:2.5rem;color:#D3D1C7"></i>
+      <p class="mt-3 mb-0" style="color:#94A3B8">
+        Selecciona un grado, materia y corte para ver y editar las notas.
+      </p>
+    </div>
+
+    <% } else if (estudiantes.length === 0) { %>
+
+    <div class="card p-5 text-center">
+      <i class="bi bi-people" style="font-size:2.5rem;color:#D3D1C7"></i>
+      <p class="mt-3 mb-0" style="color:#94A3B8">
+        No hay estudiantes activos en <%= gradoSel ? gradoSel.nombre : 'este grado' %>.
+      </p>
+    </div>
+
+    <% } else { %>
+
+    <%# Resumen del grupo seleccionado %>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <div>
+        <span style="font-family:'Playfair Display',serif;color:var(--navy);font-size:1rem;font-weight:600">
+          <%= materiaSel ? materiaSel.nombre : '' %> —
+          <%= gradoSel ? gradoSel.nombre : '' %>
+        </span>
+        <span style="font-size:0.78rem;color:#64748B;margin-left:0.75rem">
+          Corte <%= periodoSel ? periodoSel.corte : '' %>, <%= periodoSel ? periodoSel.anio : '' %>
+        </span>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <span class="badge" style="background:#DBEAFE;color:#1A4A8A;font-size:0.75rem">
+          <%= estudiantes.length %> estudiantes
+        </span>
+        <div style="display:flex;gap:4px">
+          <span class="badge" style="background:#DCFCE7;color:#1E7E4A;font-size:0.72rem">AA 90–100</span>
+          <span class="badge" style="background:#DBEAFE;color:#1A4A8A;font-size:0.72rem">AS 76–89</span>
+          <span class="badge" style="background:#FFF8E6;color:#D4870A;font-size:0.72rem">AF 60–75</span>
+          <span class="badge" style="background:#FEE2E2;color:#C0392B;font-size:0.72rem">AI &lt;60</span>
+        </div>
+      </div>
+    </div>
+
+    <form method="POST" action="/notas/guardar" id="form-notas">
+      <input type="hidden" name="materia_id" value="<%= materiaId %>">
+      <input type="hidden" name="periodo_id" value="<%= periodoId %>">
+      <input type="hidden" name="grado_id"   value="<%= gradoId %>">
+
+      <div class="card">
+        <div class="table-responsive">
+          <table class="table table-sm mb-0" style="font-size:0.875rem">
+            <thead style="background:#F8FAFC">
+              <tr>
+                <th style="padding:0.7rem 1rem;color:#475569;font-weight:600;font-size:0.72rem;text-transform:uppercase">Código</th>
+                <th style="padding:0.7rem;color:#475569;font-weight:600;font-size:0.72rem;text-transform:uppercase">Estudiante</th>
+                <th class="text-center" style="padding:0.7rem;color:#475569;font-weight:600;font-size:0.72rem;text-transform:uppercase;width:120px">
+                  Nota (0–100)
+                </th>
+                <th class="text-center" style="padding:0.7rem;color:#475569;font-weight:600;font-size:0.72rem;text-transform:uppercase;width:80px">
+                  Nivel
+                </th>
+                <th style="width:50px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% estudiantes.forEach(est => {
+                const nota = notasMap[est.id];
+                const valorNota = nota ? parseFloat(nota.nota_numerica) : null;
+                let coef = '', bgCoef = '#F1EFE8', colCoef = '#888780';
+                if (valorNota !== null) {
+                  if (valorNota >= 90)      { coef='AA'; bgCoef='#DCFCE7'; colCoef='#1E7E4A'; }
+                  else if (valorNota >= 76) { coef='AS'; bgCoef='#DBEAFE'; colCoef='#1A4A8A'; }
+                  else if (valorNota >= 60) { coef='AF'; bgCoef='#FFF8E6'; colCoef='#D4870A'; }
+                  else                      { coef='AI'; bgCoef='#FEE2E2'; colCoef='#C0392B'; }
+                }
+              %>
+              <tr style="border-bottom:1px solid #F8FAFC" id="fila-est-<%= est.id %>">
+                <td style="padding:0.65rem 1rem;color:#64748B;font-family:'Courier New';font-size:0.78rem">
+                  <%= est.codigo_estudiante || '—' %>
+                </td>
+                <td style="padding:0.65rem 0.75rem">
+                  <div style="font-weight:600;color:var(--navy)">
+                    <%= est.apellido1 %><%= est.apellido2 ? ' ' + est.apellido2 : '' %>
+                  </div>
+                  <div style="font-size:0.75rem;color:#64748B">
+                    <%= est.nombre1 %><%= est.nombre2 ? ' ' + est.nombre2 : '' %>
+                  </div>
+                </td>
+                <td style="padding:0.65rem 0.5rem;text-align:center">
+                  <input type="number"
+                         name="notas[est_<%= est.id %>]"
+                         id="nota-<%= est.id %>"
+                         class="form-control form-control-sm text-center nota-input"
+                         style="width:80px;margin:0 auto;font-weight:600"
+                         value="<%= valorNota !== null ? valorNota : '' %>"
+                         min="0" max="100" step="0.1"
+                         placeholder="—"
+                         oninput="actualizarCoef(<%= est.id %>, this.value)">
+                </td>
+                <td style="padding:0.65rem 0.5rem;text-align:center">
+                  <div id="coef-<%= est.id %>"
+                       style="width:36px;height:36px;border-radius:50%;
+                              background:<%= bgCoef %>;color:<%= colCoef %>;
+                              display:inline-flex;align-items:center;justify-content:center;
+                              font-size:0.72rem;font-weight:700;margin:0 auto">
+                    <%= coef || '—' %>
+                  </div>
+                </td>
+                <td style="padding:0.65rem 0.5rem;text-align:center">
+                  <% if (nota) { %>
+                  <button type="button" class="btn btn-sm"
+                          style="background:#FFF1F0;color:#C0392B;border:none;padding:0.2rem 0.4rem"
+                          title="Borrar nota"
+                          onclick="borrarNota(<%= nota.id %>, <%= est.id %>)">
+                    <i class="bi bi-trash" style="font-size:0.7rem"></i>
+                  </button>
+                  <% } %>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="padding:1rem;border-top:1px solid #F1F5F9;display:flex;justify-content:flex-end;gap:0.75rem">
+          <a href="/notas?grado_id=<%= gradoId %>&materia_id=<%= materiaId %>&periodo_id=<%= periodoId %>"
+             class="btn btn-sm" style="border:1px solid #E2E8F0;color:#64748B">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Descartar cambios
+          </a>
+          <button type="submit" class="btn btn-sm btn-navy">
+            <i class="bi bi-check-lg me-1"></i>Guardar todas las notas
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <% } %>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Datos de grados y materias para el selector dinámico
+  const gradosData = <%- JSON.stringify(grados.map(g => ({
+    id: g.id,
+    materias: (g.materias || []).map(m => ({ id: m.id, nombre: m.nombre }))
+  }))) %>;
+
+  function actualizarMaterias(gradoId) {
+    const sel = document.getElementById('sel-materia');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Seleccionar materia...</option>';
+
+    const grado = gradosData.find(g => g.id == gradoId);
+    if (!grado) return;
+
+    grado.materias.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value       = m.id;
+      opt.textContent = m.nombre;
+      sel.appendChild(opt);
+    });
+
+    // Auto-submit si ya hay materia seleccionada
+    // (útil al cambiar grado)
+  }
+
+  // Actualizar el círculo de coeficiente en tiempo real
+  function actualizarCoef(estId, valor) {
+    const el = document.getElementById(`coef-${estId}`);
+    if (!el) return;
+    const v = parseFloat(valor);
+    if (isNaN(v) || valor === '') {
+      el.style.background = '#F1EFE8';
+      el.style.color      = '#888780';
+      el.textContent      = '—';
+      return;
+    }
+    if (v >= 90)      { el.style.background='#DCFCE7'; el.style.color='#1E7E4A'; el.textContent='AA'; }
+    else if (v >= 76) { el.style.background='#DBEAFE'; el.style.color='#1A4A8A'; el.textContent='AS'; }
+    else if (v >= 60) { el.style.background='#FFF8E6'; el.style.color='#D4870A'; el.textContent='AF'; }
+    else              { el.style.background='#FEE2E2'; el.style.color='#C0392B'; el.textContent='AI'; }
+  }
+
+  // Borrar nota individual
+  async function borrarNota(notaId, estId) {
+    if (!confirm('¿Borrar esta nota?')) return;
+    const resp = await fetch(`/notas/${notaId}/eliminar`, { method: 'POST' });
+    const data = await resp.json();
+    if (data.ok) {
+      // Limpiar el input y el coeficiente
+      const input = document.getElementById(`nota-${estId}`);
+      if (input) { input.value = ''; actualizarCoef(estId, ''); }
+    }
+  }
+</script>
+</body>
+</html>

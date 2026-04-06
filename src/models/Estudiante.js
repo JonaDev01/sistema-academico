@@ -83,8 +83,14 @@ const Estudiante = sequelize.define('Estudiante', {
   },
 
   nivel: {
-    type:      DataTypes.ENUM('preescolar', 'primaria', 'secundaria'),
+    type:      DataTypes.STRING(20),
     allowNull: false,
+    validate: {
+      isIn: {
+        args: [['preescolar', 'primaria', 'secundaria']],
+        msg: 'El nivel debe ser preescolar, primaria o secundaria',
+      },
+    },
   },
 
   direccion: {
@@ -94,9 +100,10 @@ const Estudiante = sequelize.define('Estudiante', {
 
   // ── ESTADO ACADÉMICO Y FINANCIERO ────────────────────────
   estado_matricula: {
-    type:         DataTypes.ENUM('activo', 'retirado', 'egresado'),
+    type:         DataTypes.STRING(20),
     allowNull:    false,
     defaultValue: 'activo',
+  validate: { isIn: { args: [['activo','retirado','egresado','repitente']], msg: 'Estado de matrícula no válido' } },
   },
 
   tipo_beca: {

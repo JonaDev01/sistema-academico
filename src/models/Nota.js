@@ -59,19 +59,28 @@ const Nota = sequelize.define('Nota', {
     onDelete:   'RESTRICT',
   },
 
+  // Se calcula automáticamente por el hook beforeCreate/beforeUpdate
+  // allowNull: true porque Sequelize valida ANTES de ejecutar los hooks
+  // En la práctica nunca queda null — el hook siempre lo calcula
+  coeficiente: {
+    type:      DataTypes.STRING(2),
+    allowNull: true,
+  },
+
+  // También corregimos nota_numerica: el validador min/max de Sequelize
+  // tiene un bug con DECIMAL cuando se pasa como string — usar isFloat + custom
   nota_numerica: {
     type:      DataTypes.DECIMAL(5, 2),
     allowNull: false,
-    validate:  {
-      min: { args: 0,   msg: 'La nota mínima es 0'   },
-      max: { args: 100, msg: 'La nota máxima es 100' },
+    validate: {
+      isNumeric: { msg: 'La nota debe ser un número' },
+      valorValido(value) {
+        const v = parseFloat(value);
+        if (isNaN(v))  throw new Error('La nota debe ser un número válido');
+        if (v < 0)     throw new Error('La nota mínima es 0');
+        if (v > 100)   throw new Error('La nota máxima es 100');
+      },
     },
-  },
-
-  // Se calcula automáticamente — NO lo envía el cliente
-  coeficiente: {
-    type:      DataTypes.ENUM('AA', 'AS', 'AF', 'AI'),
-    allowNull: false,
   },
 
   observacion: {
