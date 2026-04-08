@@ -75,7 +75,7 @@ sequelize.authenticate()
     return sequelize.sync({ alter: false });
   })
   .then(() => {
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     });
   })
