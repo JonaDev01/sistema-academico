@@ -99,6 +99,18 @@
                class="btn w-100" style="background:#CCFBF1;color:#0F6E56;justify-content:flex-start">
               <i class="bi bi-diagram-3 me-2"></i>Gestionar asignaciones
             </a>
+            <a href="/docentes/<%= docente.id %>/estudiantes"
+               class="btn w-100" style="background:#DBEAFE;color:#1A4A8A;justify-content:flex-start">
+              <i class="bi bi-people me-2"></i>Ver estudiantes
+            </a>
+            <a href="/notas?docente_id=<%= docente.id %>"
+               class="btn w-100" style="background:#EDE9FE;color:#6D28D9;justify-content:flex-start">
+              <i class="bi bi-journal-check me-2"></i>Registrar / exportar notas
+            </a>
+            <a href="/boletin"
+               class="btn w-100" style="background:#FFF1F0;color:#993556;justify-content:flex-start">
+              <i class="bi bi-file-earmark-pdf me-2"></i>Generar boletines
+            </a>
             <form method="POST" action="/docentes/<%= docente.id %>/toggle">
               <button type="submit" class="btn w-100"
                       style="background:<%= docente.usuario && docente.usuario.activo ? '#FFF1F0' : '#F0FDF4' %>;

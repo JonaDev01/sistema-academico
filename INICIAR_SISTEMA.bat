@@ -8,41 +8,43 @@ echo  ================================================
 echo   SISTEMA ACADEMICO - COLEGIO MONTE HERMON
 echo  ================================================
 echo.
-
-:: Obtener IP del WiFi automaticamente
-for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /i "IPv4" ^| findstr /v "192.168.56"') do (
-    set IP=%%a
-    goto :found
-)
-:found
-set IP=%IP: =%
-
-echo  Iniciando servidor...
+echo  Iniciando...
 echo.
+
+:: Cambiar al directorio del bat
+cd /d "%~dp0"
+
+:: Usar Node.js para generar QR — guarda acceso_movil.html aqui mismo
+:: y devuelve solo la IP en una linea
+for /f %%i in ('node generar_qr.js') do set IP=%%i
+
 echo  ================================================
+echo.
 echo   Acceso desde esta PC:
 echo   http://localhost:3000
-echo   http://colegio.local:3000
 echo.
-echo   Acceso desde otros dispositivos (misma red):
-echo   http://colegio.local:3000
+echo   IP actual del servidor: %IP%
+echo   http://%IP%:3000
+echo.
+echo   Telefonos: se abrio pagina con codigo QR
+echo   (escanear con la camara del telefono)
+echo.
 echo  ================================================
 echo.
-echo  Credenciales admin:
-echo    Email   : admin@colegio.edu
-echo    Password: Admin1234!
+echo  Admin: admin@colegio.edu / Admin1234!
 echo.
-echo  IMPORTANTE: No cierre esta ventana mientras
-echo  el sistema este en uso.
+echo  NO cierre esta ventana mientras use el sistema
 echo  ================================================
 echo.
 
-:: Abrir el navegador automaticamente despues de 3 segundos
-timeout /t 3 /nobreak >nul
+:: Abrir la pagina del QR (esta en la misma carpeta)
+start "" "%~dp0acceso_movil.html"
+
+:: Esperar y abrir el sistema
+timeout /t 2 /nobreak >nul
 start "" "http://localhost:3000"
 
-:: Iniciar el servidor
-cd /d "%~dp0"
+:: Iniciar servidor
 npm run start
 
 pause

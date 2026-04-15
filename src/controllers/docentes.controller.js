@@ -5,7 +5,7 @@
 // =============================================================
 
 const bcrypt  = require('bcryptjs');
-const { Usuario, Docente, Asignacion, Grado, Materia } = require('../models');
+const { Usuario, Docente, Asignacion, Grado, Materia, Estudiante } = require('../models');
 const { Op }  = require('sequelize');
 
 // ── GET /docentes ─────────────────────────────────────────────
@@ -220,6 +220,7 @@ const verAsignaciones = async (req, res) => {
           {
             model:    Asignacion,
             as:       'asignaciones',
+            where:    { activo: true },
             required: false,
             include: [
               { model: Grado,   as: 'gradoAsignacion', attributes: ['id', 'nombre'] },
@@ -301,8 +302,114 @@ const eliminarAsignacion = async (req, res) => {
   }
 };
 
+// ── POST /docentes/:id/asignaciones/grado-completo ────────────
+// Asigna todas las materias activas de un grado de una sola vez
+const agregarGradoCompleto = async (req, res) => {
+  const docente_id = req.params.id;
+  const { grado_id, anio } = req.body;
+
+  try {
+    const materias = await Materia.findAll({
+      where: { grado_id, activo: true },
+    });
+
+    if (materias.length === 0) {
+      return res.redirect(`/docentes/${docente_id}/asignaciones?error=Este grado no tiene materias activas`);
+    }
+
+    let agregadas = 0;
+    let omitidas  = 0;
+
+    for (const materia of materias) {
+      const existe = await Asignacion.findOne({
+        where: { docente_id, grado_id, materia_id: materia.id, anio: parseInt(anio) },
+      });
+      if (!existe) {
+        await Asignacion.create({
+          docente_id,
+          grado_id,
+          materia_id: materia.id,
+          anio:       parseInt(anio),
+          activo:     true,
+        });
+        agregadas++;
+      } else if (!existe.activo) {
+        // Si existe pero estaba desactivada, reactivarla
+        await existe.update({ activo: true });
+        agregadas++;
+      } else {
+        omitidas++;
+      }
+    }
+
+    const msg = omitidas > 0
+      ? `${agregadas} materias asignadas (${omitidas} ya existían)`
+      : `${agregadas} materias asignadas correctamente`;
+
+    res.redirect(`/docentes/${docente_id}/asignaciones?mensaje=${encodeURIComponent(msg)}`);
+
+  } catch (error) {
+    console.error('Error en agregarGradoCompleto:', error);
+    res.redirect(`/docentes/${docente_id}/asignaciones?error=Error al asignar el grado`);
+  }
+};
+
 module.exports = {
   listarDocentes, mostrarFormNuevo, crearDocente,
   verPerfil, mostrarFormEditar, actualizarDocente,
-  toggleDocente, verAsignaciones, agregarAsignacion, eliminarAsignacion,
+  toggleDocente, verAsignaciones, agregarAsignacion,
+  eliminarAsignacion, agregarGradoCompleto, verEstudiantes,
 };
+
+// ── GET /docentes/:id/estudiantes ─────────────────────────────
+async function verEstudiantes(req, res) {
+  try {
+    const usuario  = req.session.usuario;
+    let   docenteId = req.params.id;
+
+    // Si el que accede es docente, forzar su propio ID
+    if (usuario.rol === 'docente') {
+      const miDocente = await Docente.findOne({ where: { usuario_id: usuario.id } });
+      if (!miDocente) return res.redirect('/dashboard?error=Perfil de docente no encontrado');
+      docenteId = miDocente.id;
+    }
+
+    const docente = await Docente.findByPk(docenteId, {
+      include: [{ model: Usuario, as: 'usuario', attributes: ['username'] }],
+    });
+    if (!docente) return res.redirect('/docentes?error=Docente no encontrado');
+
+    // Obtener grados asignados al docente
+    const asignaciones = await Asignacion.findAll({
+      where:   { docente_id: docente.id, activo: true },
+      include: [{ model: Grado, as: 'gradoAsignacion', attributes: ['id', 'nombre'] }],
+    });
+
+    const gradoIds = [...new Set(
+      asignaciones.map(a => a.gradoAsignacion?.id).filter(Boolean)
+    )];
+
+    const { Op } = require('sequelize');
+    const estudiantes = gradoIds.length > 0
+      ? await Estudiante.findAll({
+          where: {
+            grado_id:         { [Op.in]: gradoIds },
+            estado_matricula: { [Op.in]: ['activo', 'repitente'] },
+          },
+          include: [{ model: Grado, as: 'grado', attributes: ['id', 'nombre'] }],
+          order:   [['apellido1', 'ASC'], ['nombre1', 'ASC']],
+        })
+      : [];
+
+    res.render('docentes/estudiantes', {
+      titulo:      `Mis Estudiantes — ${docente.nombre} ${docente.apellido}`,
+      docente,
+      estudiantes,
+      mensaje:     req.query.mensaje || null,
+      error:       req.query.error   || null,
+    });
+  } catch (error) {
+    console.error('Error en verEstudiantes:', error);
+    res.redirect('/dashboard?error=Error al cargar estudiantes');
+  }
+}

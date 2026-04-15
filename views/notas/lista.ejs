@@ -9,8 +9,8 @@
     <h1 class="page-title">
       <i class="bi bi-journal-check me-2" style="color:var(--accent)"></i>Registro de Notas
     </h1>
-    <% if (gradoId && materiaId && periodoId) { %>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+      <% if (gradoId && materiaId && periodoId) { %>
       <a href="/notas/exportar/corte?grado_id=<%= gradoId %>&materia_id=<%= materiaId %>&periodo_id=<%= periodoId %>"
          class="btn btn-sm"
          style="background:#DCFCE7;color:#1E7E4A;border:1px solid #1E7E4A20">
@@ -20,8 +20,20 @@
          class="btn btn-sm btn-navy">
         <i class="bi bi-file-earmark-excel me-1"></i>Exportar general
       </a>
+      <% } %>
+      <% if (usuario.rol === 'admin' && gradoId) { %>
+      <a href="/notas/exportar/grado-corte?grado_id=<%= gradoId %>&periodo_id=<%= periodoId %>"
+         class="btn btn-sm"
+         style="background:#EDE9FE;color:#6D28D9;border:1px solid #6D28D920">
+        <i class="bi bi-collection me-1"></i>Grado — corte
+      </a>
+      <a href="/notas/exportar/grado-general?grado_id=<%= gradoId %>"
+         class="btn btn-sm"
+         style="background:#DBEAFE;color:#1A4A8A;border:1px solid #1A4A8A20">
+        <i class="bi bi-collection me-1"></i>Grado — general
+      </a>
+      <% } %>
     </div>
-    <% } %>
   </div>
 
   <div class="p-4">
@@ -37,7 +49,10 @@
     </div>
     <% } %>
 
-    <%# ── Selector de grado / materia / corte ── %>
+    <%# ── Selector — diferente para admin y docente ── %>
+    <% if (usuario.rol === 'admin') { %>
+
+    <%# Admin: selector completo con todos los grados, materias y cortes %>
     <div class="card mb-4">
       <div class="card-header-custom">
         <i class="bi bi-funnel me-2"></i>Seleccionar clase
@@ -46,7 +61,7 @@
         <form method="GET" action="/notas" id="form-selector">
           <div class="row g-3 align-items-end">
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
               <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase">
                 Grado <span style="color:#C0392B">*</span>
               </label>
@@ -60,7 +75,7 @@
               </select>
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
               <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase">
                 Materia <span style="color:#C0392B">*</span>
               </label>
@@ -93,7 +108,71 @@
               </select>
             </div>
 
-            <div class="col-12 col-md-1">
+            <div class="col-12 col-md-3">
+              <button type="submit" class="btn btn-navy w-100">
+                <i class="bi bi-arrow-right me-1"></i>Ver notas
+              </button>
+            </div>
+
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <% } else { %>
+
+    <%# Docente: ve sus materias directamente con filtro — solo corte activo %>
+    <div class="card mb-4">
+      <div class="card-header-custom">
+        <i class="bi bi-funnel me-2"></i>Mis clases
+        <% const periodoActivo = periodos.find(p => p.activo); %>
+        <% if (periodoActivo) { %>
+        <span style="font-size:0.8rem;opacity:0.7;margin-left:0.5rem">
+          Corte <%= periodoActivo.corte %> — <%= periodoActivo.anio %>
+        </span>
+        <% } %>
+      </div>
+      <div class="p-3">
+        <form method="GET" action="/notas" id="form-selector">
+          <%# Corte activo fijo para docentes %>
+          <% if (periodoActivo) { %>
+          <input type="hidden" name="periodo_id" value="<%= periodoActivo.id %>">
+          <% } %>
+
+          <div class="row g-3 align-items-end">
+
+            <div class="col-12 col-md-5">
+              <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase">
+                Grado
+              </label>
+              <select name="grado_id" class="form-select" onchange="actualizarMaterias(this.value)">
+                <option value="">Todos mis grados</option>
+                <% grados.forEach(g => { %>
+                <option value="<%= g.id %>" <%= gradoId == g.id ? 'selected' : '' %>>
+                  <%= g.nombre %>
+                </option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-5">
+              <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase">
+                Materia <span style="color:#C0392B">*</span>
+              </label>
+              <select name="materia_id" id="sel-materia" class="form-select" required>
+                <option value="">Seleccionar materia...</option>
+                <% grados.forEach(g => {
+                   (g.materias || []).forEach(m => { %>
+                <option value="<%= m.id %>"
+                        data-grado="<%= g.id %>"
+                        <%= materiaId == m.id ? 'selected' : '' %>>
+                  <%= g.nombre %> — <%= m.nombre %>
+                </option>
+                <% }); }); %>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-2">
               <button type="submit" class="btn btn-navy w-100">
                 <i class="bi bi-arrow-right"></i>
               </button>
@@ -103,6 +182,8 @@
         </form>
       </div>
     </div>
+
+    <% } %>
 
     <%# ── Tabla de notas ── %>
     <% if (!gradoId || !materiaId || !periodoId) { %>
@@ -255,23 +336,33 @@
     materias: (g.materias || []).map(m => ({ id: m.id, nombre: m.nombre }))
   }))) %>;
 
+  const esDocente = '<%= usuario.rol %>' !== 'admin';
+
   function actualizarMaterias(gradoId) {
     const sel = document.getElementById('sel-materia');
     if (!sel) return;
-    sel.innerHTML = '<option value="">Seleccionar materia...</option>';
 
+    if (esDocente) {
+      // Docente: mostrar/ocultar sus materias según el grado seleccionado
+      Array.from(sel.options).forEach(opt => {
+        if (!opt.value) return; // opción vacía siempre visible
+        opt.hidden = gradoId ? opt.dataset.grado != gradoId : false;
+      });
+      // Si el option seleccionado quedó oculto, limpiar
+      if (sel.selectedOptions[0]?.hidden) sel.value = '';
+      return;
+    }
+
+    // Admin: reemplazar opciones con las del grado
+    sel.innerHTML = '<option value="">Seleccionar materia...</option>';
     const grado = gradosData.find(g => g.id == gradoId);
     if (!grado) return;
-
     grado.materias.forEach(m => {
       const opt = document.createElement('option');
       opt.value       = m.id;
       opt.textContent = m.nombre;
       sel.appendChild(opt);
     });
-
-    // Auto-submit si ya hay materia seleccionada
-    // (útil al cambiar grado)
   }
 
   // Actualizar el círculo de coeficiente en tiempo real

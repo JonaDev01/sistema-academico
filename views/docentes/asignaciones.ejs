@@ -116,18 +116,35 @@
                 </select>
               </div>
 
-              <div class="mb-4">
+              <div class="mb-3">
                 <label class="form-label">Año <span style="color:#C0392B">*</span></label>
-                <input type="number" name="anio" class="form-control"
+                <input type="number" name="anio" id="input-anio" class="form-control"
                        value="<%= new Date().getFullYear() %>"
                        min="2024" max="2030" required>
               </div>
 
-              <button type="submit" class="btn btn-navy w-100">
-                <i class="bi bi-plus-lg me-1"></i>Agregar clase
+              <button type="submit" class="btn btn-navy w-100 mb-2">
+                <i class="bi bi-plus-lg me-1"></i>Agregar materia
               </button>
 
             </form>
+
+            <%# Botón agregar grado completo %>
+            <div style="border-top:1px solid #F1F5F9;padding-top:0.75rem;margin-top:0.25rem">
+              <p style="font-size:0.72rem;color:#94A3B8;margin-bottom:0.5rem;text-align:center">
+                O agregar todas las materias del grado
+              </p>
+              <form method="POST" action="/docentes/<%= docente.id %>/asignaciones/grado-completo">
+                <input type="hidden" name="grado_id" id="hidden-grado-id" value="">
+                <input type="hidden" name="anio"     id="hidden-anio"     value="<%= new Date().getFullYear() %>">
+                <button type="button" class="btn w-100"
+                        style="background:#DBEAFE;color:#1A4A8A;border:1px solid #1A4A8A20"
+                        onclick="asignarGradoCompleto()">
+                  <i class="bi bi-collection me-1"></i>Asignar grado completo
+                </button>
+              </form>
+            </div>
+
           </div>
         </div>
       </div>
@@ -148,6 +165,11 @@
     const sel = document.getElementById('sel-materia');
     sel.innerHTML = '<option value="">Seleccionar materia...</option>';
 
+    // Sincronizar hidden inputs para grado completo
+    document.getElementById('hidden-grado-id').value = gradoId;
+    const anio = document.getElementById('input-anio');
+    if (anio) document.getElementById('hidden-anio').value = anio.value;
+
     if (!gradoId) return;
 
     const grado = gradosData.find(g => g.id == gradoId);
@@ -162,6 +184,23 @@
       opt.textContent = m.nombre;
       sel.appendChild(opt);
     });
+  }
+
+  function asignarGradoCompleto() {
+    const gradoId = document.getElementById('hidden-grado-id').value;
+    if (!gradoId) {
+      alert('Primero selecciona un grado en el formulario de arriba.');
+      return;
+    }
+    const grado    = gradosData.find(g => g.id == gradoId);
+    const nombre   = grado ? grado.materias.length : 0;
+    if (!confirm(`¿Asignar todas las ${nombre} materias de este grado al docente?`)) return;
+
+    // Sincronizar año
+    const anio = document.getElementById('input-anio');
+    if (anio) document.getElementById('hidden-anio').value = anio.value;
+
+    document.querySelector('form[action*="grado-completo"]').submit();
   }
 </script>
 </body>

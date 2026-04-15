@@ -204,9 +204,13 @@ const verNotas = async (req, res) => {
 
     // Si es docente verificar que tenga clase en el mismo grado
     if (usuario.rol === 'docente') {
-      const tieneAcceso = await Asignacion.findOne({
-        where: { docente_id: usuario.docente_id, grado_id: estudiante.grado_id, activo: true },
-      });
+      const { Docente } = require('../models');
+      const docente = await Docente.findOne({ where: { usuario_id: usuario.id } });
+      const tieneAcceso = docente
+        ? await Asignacion.findOne({
+            where: { docente_id: docente.id, grado_id: estudiante.grado_id, activo: true },
+          })
+        : null;
       if (!tieneAcceso) return res.status(403).render('403', { titulo: 'Acceso denegado' });
     }
 

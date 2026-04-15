@@ -44,6 +44,21 @@
         <i class="bi bi-journal-check"></i> Notas
       </a>
 
+      <a href="/admin/corte"
+         class="nav-link <%= paginaActual === 'corte' ? 'active' : '' %>">
+        <i class="bi bi-calendar-check"></i> Corte activo
+      </a>
+
+      <a href="/admin/fin-de-anio"
+         class="nav-link <%= paginaActual === 'fin-de-anio' ? 'active' : '' %>">
+        <i class="bi bi-mortarboard"></i> Fin de año
+      </a>
+
+      <a href="/admin/papelera"
+         class="nav-link <%= paginaActual === 'papelera' ? 'active' : '' %>">
+        <i class="bi bi-trash"></i> Papelera
+      </a>
+
       <div class="nav-section">Reportes</div>
 
       <a href="/boletin"
@@ -63,6 +78,16 @@
       <a href="/notas"
          class="nav-link <%= paginaActual === 'notas' ? 'active' : '' %>">
         <i class="bi bi-journal-check"></i> Registrar Notas
+      </a>
+
+      <a href="/mis-estudiantes"
+         class="nav-link <%= paginaActual === 'estudiantes' ? 'active' : '' %>">
+        <i class="bi bi-people"></i> Mis Estudiantes
+      </a>
+
+      <a href="/boletin"
+         class="nav-link <%= paginaActual === 'boletin' ? 'active' : '' %>">
+        <i class="bi bi-file-earmark-pdf"></i> Boletín PDF
       </a>
 
     <% } %>

@@ -16,7 +16,7 @@
         Perfil del estudiante
       </h1>
     </div>
-    <% if (usuario.rol === 'admin') { %>
+    <% if (usuario.rol === 'admin' || usuario.rol === 'docente') { %>
     <div class="d-flex gap-2">
       <a href="/estudiantes/<%= estudiante.id %>/notas"
          class="btn btn-sm"
