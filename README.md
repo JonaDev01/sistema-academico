@@ -266,7 +266,7 @@ Universidad del Valle de Guatemala
 
 ## 📄 Licencia
 
-Este proyecto fue desarrollado como trabajo académico para la Universidad del Valle de Guatemala. El código es de uso libre para fines educativos.
+Este proyecto fue desarrollado como trabajo académico para la Universidad del Valle de Guatemala. El código es para fines educativos.
 
 ---
 
