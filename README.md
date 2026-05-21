@@ -202,6 +202,8 @@ Esto configura el firewall y el dominio local `colegio.local` para acceso desde 
 <summary>Dashboard del administrador</summary>
 
 > 8 estadísticas en tiempo real: estudiantes activos, docentes, grados, corte activo, repitentes, pagos pendientes, becados y notas registradas.
+<img width="1862" height="888" alt="image" src="https://github.com/user-attachments/assets/a3c7934d-194b-4f8c-ba2a-95f8e5ae687e" />
+
 
 </details>
 
@@ -209,6 +211,8 @@ Esto configura el firewall y el dominio local `colegio.local` para acceso desde 
 <summary>Registro de notas</summary>
 
 > Selector dinámico de grado/materia/corte. El coeficiente AA/AS/AF/AI se actualiza en tiempo real mientras el docente escribe. Guardado masivo en un clic.
+<img width="1544" height="832" alt="image" src="https://github.com/user-attachments/assets/d94e8002-ab02-4d0c-867f-c2370472a54b" />
+
 
 </details>
 
@@ -216,6 +220,9 @@ Esto configura el firewall y el dominio local `colegio.local` para acceso desde 
 <summary>Boletín PDF — Preescolar</summary>
 
 > Formato oficial del MINED con las evidencias de aprendizaje por dimensión (Social, Emocional, Física, Cognitiva) para I, II y III Nivel.
+<img width="1436" height="693" alt="image" src="https://github.com/user-attachments/assets/7acc10f2-bc34-4cdb-be15-c3e6431f3204" />
+
+
 
 </details>
 
@@ -223,6 +230,9 @@ Esto configura el firewall y el dominio local `colegio.local` para acceso desde 
 <summary>Reportes MINED</summary>
 
 > Archivo Excel con 6 hojas: Permanencia y Aprobación (Preescolar, Primaria, Secundaria), Estadística Nota Final por materia y F30 Reprobados. Generado en un clic.
+<img width="987" height="698" alt="image" src="https://github.com/user-attachments/assets/a53ccfce-c460-4834-9096-1a4913c62727" />
+
+
 
 </details>
 
