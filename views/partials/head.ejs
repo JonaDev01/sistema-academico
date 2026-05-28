@@ -23,6 +23,13 @@
     --sidebar-w: 240px;
   }
 
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    scroll-behavior: auto; /* evitar scroll suave que causa el efecto visual */
+  }
+
   body {
     font-family: 'Source Sans 3', sans-serif;
     background: var(--bg);
@@ -32,13 +39,27 @@
   /* ── Sidebar ── */
   #sidebar {
     width: var(--sidebar-w);
-    min-height: 100vh;
+    height: 100vh;
     background: var(--navy);
     position: fixed;
     top: 0; left: 0;
     z-index: 100;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Ocultar barra de scroll del menú pero mantener funcionalidad */
+  #sidebar .sidebar-menu {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE/Edge */
+  }
+  #sidebar .sidebar-menu::-webkit-scrollbar {
+    display: none;                /* Chrome/Safari */
   }
 
   #sidebar .sidebar-brand {
@@ -102,6 +123,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    padding-top: 57px;
   }
 
   /* ── Topbar ── */
@@ -112,9 +134,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: var(--sidebar-w);
+    right: 0;
     z-index: 50;
+    height: 57px;
   }
 
   #topbar .page-title {
@@ -215,3 +240,10 @@
 
   #bottom-nav i { font-size: 1.2rem; }
 </style>
+<script>
+  // Forzar scroll al tope al cargar la página
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  window.scrollTo(0, 0);
+</script>

@@ -246,7 +246,60 @@ module.exports = {
   mostrarGestionCorte, cambiarCorte,
   mostrarFinDeAnio, aplicarFinDeAnio,
   mostrarPapelera, restaurarElemento, eliminarPermanente,
+  mostrarPerfilAdmin, actualizarPerfilAdmin,
 };
+
+// ── GET /admin/perfil ─────────────────────────────────────────
+async function mostrarPerfilAdmin(req, res) {
+  try {
+    const { Usuario } = require('../models');
+    const usuario = await Usuario.findByPk(req.session.usuario.id);
+    res.render('admin/perfil', {
+      titulo:  'Mi Perfil',
+      usuario,
+      mensaje: req.query.mensaje || null,
+      error:   req.query.error   || null,
+    });
+  } catch (error) {
+    console.error('Error en mostrarPerfilAdmin:', error);
+    res.redirect('/dashboard');
+  }
+}
+
+// ── POST /admin/perfil ────────────────────────────────────────
+async function actualizarPerfilAdmin(req, res) {
+  const { nombre, email, password_actual, password_nuevo } = req.body;
+  try {
+    const bcrypt  = require('bcryptjs');
+    const { Usuario } = require('../models');
+    const usuario = await Usuario.findByPk(req.session.usuario.id);
+
+    // Verificar email único si cambió
+    if (email !== usuario.email) {
+      const existe = await Usuario.findOne({ where: { email } });
+      if (existe) return res.redirect('/admin/perfil?error=Ese correo ya está en uso');
+    }
+
+    // Si quiere cambiar contraseña, verificar la actual
+    if (password_nuevo && password_nuevo.trim() !== '') {
+      const ok = await bcrypt.compare(password_actual, usuario.password_hash);
+      if (!ok) return res.redirect('/admin/perfil?error=La contraseña actual no es correcta');
+      const hash = await bcrypt.hash(password_nuevo, 10);
+      await usuario.update({ nombre, email, password_hash: hash });
+    } else {
+      await usuario.update({ nombre, email });
+    }
+
+    // Actualizar sesión
+    req.session.usuario.nombre = nombre;
+    req.session.usuario.email  = email;
+
+    res.redirect('/admin/perfil?mensaje=Perfil actualizado correctamente');
+  } catch (error) {
+    console.error('Error en actualizarPerfilAdmin:', error);
+    res.redirect('/admin/perfil?error=Error al actualizar el perfil');
+  }
+}
 
 // ── GET /admin/papelera ───────────────────────────────────────
 async function mostrarPapelera(req, res) {

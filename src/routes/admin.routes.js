@@ -14,5 +14,7 @@ router.post('/admin/fin-de-anio/aplicar', verificarAdmin, ctrl.aplicarFinDeAnio)
 router.get( '/admin/papelera',            verificarAdmin, ctrl.mostrarPapelera);
 router.post('/admin/papelera/restaurar',  verificarAdmin, ctrl.restaurarElemento);
 router.post('/admin/papelera/eliminar',   verificarAdmin, ctrl.eliminarPermanente);
+router.get( '/admin/perfil',              verificarAdmin, ctrl.mostrarPerfilAdmin);
+router.post('/admin/perfil',              verificarAdmin, ctrl.actualizarPerfilAdmin);
 
 module.exports = router;
