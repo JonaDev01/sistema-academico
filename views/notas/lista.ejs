@@ -9,7 +9,12 @@
     <h1 class="page-title">
       <i class="bi bi-journal-check me-2" style="color:var(--accent)"></i>Registro de Notas
     </h1>
-    <div class="d-flex gap-2 flex-wrap">
+    <%# Botones de exportar — desktop: individuales, móvil: dropdown ── %>
+    <% const hayExportar = (gradoId && materiaId && periodoId) || (usuario.rol === 'admin' && gradoId); %>
+    <% if (hayExportar) { %>
+
+    <%# Desktop: botones individuales %>
+    <div class="d-none d-md-flex gap-2">
       <% if (gradoId && materiaId && periodoId) { %>
       <a href="/notas/exportar/corte?grado_id=<%= gradoId %>&materia_id=<%= materiaId %>&periodo_id=<%= periodoId %>"
          class="btn btn-sm"
@@ -33,6 +38,43 @@
         <i class="bi bi-collection me-1"></i>Grado — general
       </a>
       <% } %>
+    </div>
+
+    <%# Móvil: dropdown único %>
+    <div class="d-md-none dropdown">
+      <button class="btn btn-sm btn-navy dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="bi bi-file-earmark-excel"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size:0.85rem;min-width:180px">
+        <% if (gradoId && materiaId && periodoId) { %>
+        <li>
+          <a class="dropdown-item" href="/notas/exportar/corte?grado_id=<%= gradoId %>&materia_id=<%= materiaId %>&periodo_id=<%= periodoId %>">
+            <i class="bi bi-file-earmark-excel me-2" style="color:#1E7E4A"></i>Exportar corte
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="/notas/exportar/general?grado_id=<%= gradoId %>&materia_id=<%= materiaId %>">
+            <i class="bi bi-file-earmark-excel me-2" style="color:var(--navy)"></i>Exportar general
+          </a>
+        </li>
+        <% } %>
+        <% if (usuario.rol === 'admin' && gradoId) { %>
+        <% if (gradoId && materiaId && periodoId) { %><li><hr class="dropdown-divider"></li><% } %>
+        <li>
+          <a class="dropdown-item" href="/notas/exportar/grado-corte?grado_id=<%= gradoId %>&periodo_id=<%= periodoId %>">
+            <i class="bi bi-collection me-2" style="color:#6D28D9"></i>Grado — corte
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="/notas/exportar/grado-general?grado_id=<%= gradoId %>">
+            <i class="bi bi-collection me-2" style="color:#1A4A8A"></i>Grado — general
+          </a>
+        </li>
+        <% } %>
+      </ul>
+    </div>
+
+    <% } %>
     </div>
   </div>
 
