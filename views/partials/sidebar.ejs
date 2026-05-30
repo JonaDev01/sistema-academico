@@ -153,3 +153,140 @@
     <span>Salir</span>
   </a>
 </nav>
+
+
+    <%# Dashboard — visible para todos %>
+    <a href="/dashboard"
+       class="nav-link <%= paginaActual === 'dashboard' ? 'active' : '' %>">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+
+    <% if (usuario && usuario.rol === 'admin') { %>
+      <%# ── Sección admin ── %>
+      <div class="nav-section">Administración</div>
+
+      <a href="/grados"
+         class="nav-link <%= paginaActual === 'grados' ? 'active' : '' %>">
+        <i class="bi bi-diagram-3"></i> Grados y Materias
+      </a>
+
+      <a href="/estudiantes"
+         class="nav-link <%= paginaActual === 'estudiantes' ? 'active' : '' %>">
+        <i class="bi bi-people"></i> Estudiantes
+      </a>
+
+      <a href="/docentes"
+         class="nav-link <%= paginaActual === 'docentes' ? 'active' : '' %>">
+        <i class="bi bi-person-badge"></i> Docentes
+      </a>
+
+      <div class="nav-section">Académico</div>
+
+      <a href="/notas"
+         class="nav-link <%= paginaActual === 'notas' ? 'active' : '' %>">
+        <i class="bi bi-journal-check"></i> Notas
+      </a>
+
+      <a href="/admin/corte"
+         class="nav-link <%= paginaActual === 'corte' ? 'active' : '' %>">
+        <i class="bi bi-calendar-check"></i> Corte activo
+      </a>
+
+      <a href="/admin/fin-de-anio"
+         class="nav-link <%= paginaActual === 'fin-de-anio' ? 'active' : '' %>">
+        <i class="bi bi-mortarboard"></i> Fin de año
+      </a>
+
+      <a href="/admin/papelera"
+         class="nav-link <%= paginaActual === 'papelera' ? 'active' : '' %>">
+        <i class="bi bi-trash"></i> Papelera
+      </a>
+
+      <div class="nav-section">Reportes</div>
+
+      <a href="/boletin"
+         class="nav-link <%= paginaActual === 'boletin' ? 'active' : '' %>">
+        <i class="bi bi-file-earmark-pdf"></i> Boletín PDF
+      </a>
+
+      <a href="/admin/reportes"
+         class="nav-link <%= paginaActual === 'reportes' ? 'active' : '' %>">
+        <i class="bi bi-file-earmark-bar-graph"></i> Reportes MINED
+      </a>
+
+      <a href="/estudiantes/exportar"
+         class="nav-link">
+        <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+      </a>
+
+    <% } else if (usuario && usuario.rol === 'docente') { %>
+      <%# ── Sección docente ── %>
+      <div class="nav-section">Mis clases</div>
+
+      <a href="/notas"
+         class="nav-link <%= paginaActual === 'notas' ? 'active' : '' %>">
+        <i class="bi bi-journal-check"></i> Registrar Notas
+      </a>
+
+      <a href="/mis-estudiantes"
+         class="nav-link <%= paginaActual === 'estudiantes' ? 'active' : '' %>">
+        <i class="bi bi-people"></i> Mis Estudiantes
+      </a>
+
+      <a href="/boletin"
+         class="nav-link <%= paginaActual === 'boletin' ? 'active' : '' %>">
+        <i class="bi bi-file-earmark-pdf"></i> Boletín PDF
+      </a>
+
+    <% } %>
+
+  </div>
+
+  <%# Footer del sidebar ── %>
+  <div class="sidebar-footer">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <div class="rounded-circle bg-white bg-opacity-10 d-flex align-items-center justify-content-center"
+           style="width:32px;height:32px;flex-shrink:0">
+        <i class="bi bi-person text-white" style="font-size:0.9rem"></i>
+      </div>
+      <div style="overflow:hidden">
+        <div class="text-white fw-500" style="font-size:0.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          <%= usuario ? usuario.nombre : '' %>
+        </div>
+        <div style="font-size:0.7rem;color:rgba(255,255,255,0.45)">
+          <%= usuario ? (usuario.rol === 'admin' ? 'Administrador' : 'Docente') : '' %>
+        </div>
+      </div>
+    </div>
+    <a href="/logout" class="nav-link ps-0" style="margin:0;padding:0.4rem 0">
+      <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+    </a>
+  </div>
+
+</nav>
+
+<%# Bottom nav para móvil ── %>
+<nav id="bottom-nav">
+  <a href="/dashboard" class="<%= paginaActual === 'dashboard' ? 'active' : '' %>">
+    <i class="bi bi-speedometer2"></i>
+    <span>Inicio</span>
+  </a>
+  <% if (usuario && usuario.rol === 'admin') { %>
+  <a href="/estudiantes" class="<%= paginaActual === 'estudiantes' ? 'active' : '' %>">
+    <i class="bi bi-people"></i>
+    <span>Alumnos</span>
+  </a>
+  <a href="/docentes" class="<%= paginaActual === 'docentes' ? 'active' : '' %>">
+    <i class="bi bi-person-badge"></i>
+    <span>Docentes</span>
+  </a>
+  <% } %>
+  <a href="/notas" class="<%= paginaActual === 'notas' ? 'active' : '' %>">
+    <i class="bi bi-journal-check"></i>
+    <span>Notas</span>
+  </a>
+  <a href="/logout">
+    <i class="bi bi-box-arrow-left"></i>
+    <span>Salir</span>
+  </a>
+</nav>
